@@ -2859,6 +2859,86 @@ function autoGSBuy() {
     }
 }
 
+// -- bulkbuy helpers start --
+function magicMForTowers(towers, level) {
+    // Mirrors Grimoire M.computeMagicM: floor(4 + towers^0.6 + log((towers + (lvl-1)*10)/15 + 1) * 15).
+    var t = Math.max(towers, 1);
+    var l = Math.max(level, 1);
+    return Math.floor(4 + Math.pow(t, 0.6) + Math.log((t + (l - 1) * 10) / 15 + 1) * 15);
+}
+
+function bulkLimitRemaining(building) {
+    // Count-based caps (ids match buildingStats blacklist: 3 Mine, 4 Factory, 19 You).
+    if (!building) return 0;
+    var amount = building.amount || 0;
+    if (building.id === 3 && FrozenCookies.mineLimit) {
+        return Math.max(0, (FrozenCookies.mineMax || 0) - amount);
+    }
+    if (building.id === 4 && FrozenCookies.factoryLimit) {
+        return Math.max(0, (FrozenCookies.factoryMax || 0) - amount);
+    }
+    if (building.id === 19) {
+        var remaining = Infinity;
+        if (FrozenCookies.autoCasting == 5) remaining = Math.min(remaining, 399 - amount);
+        if (FrozenCookies.autoDragonOrbs && FrozenCookies.orbLimit) {
+            remaining = Math.min(remaining, (FrozenCookies.orbMax || 0) - amount);
+        }
+        return remaining === Infinity ? Infinity : Math.max(0, remaining);
+    }
+    return Infinity;
+}
+
+function shouldDropBulkForLimits(building) {
+    // True when buying at current UI bulk size would overshoot a cap:
+    // drop to a smaller bulk and buy 1 (preserves pre-#186 limit behavior).
+    if (!building || Game.buyBulk <= 1) return false;
+    if (building.id === 19 && FrozenCookies.autoCasting == 5) {
+        if ((building.amount || 0) + Game.buyBulk > 399) return true;
+    }
+    if (bulkLimitRemaining(building) < Game.buyBulk) return true;
+    if (building.id === 7 && FrozenCookies.towerLimit) {
+        if (
+            magicMForTowers((building.amount || 0) + Game.buyBulk, building.level || 1) >
+            (FrozenCookies.manaMax || 0)
+        ) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function affordableBulkCount(building, maxBulk, spendable) {
+    // ponytail: bulk size from affordability only; upgrade when recommendation engine becomes bulk-aware (efficiency/cost for N).
+    if (!building || maxBulk <= 0) return 0;
+    var candidates = maxBulk >= 100 ? [100, 10, 1] : maxBulk >= 10 ? [10, 1] : [1];
+    var remaining = bulkLimitRemaining(building);
+    if (remaining <= 0) return 0;
+    for (var i = 0; i < candidates.length; i++) {
+        var n = Math.min(candidates[i], remaining);
+        if (n <= 0) continue;
+        if (building.id === 7 && FrozenCookies.towerLimit && typeof M !== "undefined" && M) {
+            var n_try = n;
+            while (n_try > 1) {
+                if (magicMForTowers((building.amount || 0) + n_try, building.level || 1) <= (FrozenCookies.manaMax || 0)) break;
+                n_try = n_try >= 100 ? 10 : 1;
+            }
+            if (magicMForTowers((building.amount || 0) + n_try, building.level || 1) > (FrozenCookies.manaMax || 0)) continue;
+            n = n_try;
+        }
+        var bulkCost;
+        if (typeof building.getSumPrice === "function") {
+            bulkCost = building.getSumPrice(n);
+        } else if (typeof building.getPrice === "function") {
+            bulkCost = building.getPrice() * n;
+        } else {
+            bulkCost = (building.cost || 0) * n;
+        }
+        if (spendable >= bulkCost) return n;
+    }
+    return 0;
+}
+// -- bulkbuy helpers end --
+
 function safeBuy(bldg, count) {
     if (count <= 0) return;
     var initialAmount = bldg.amount;
@@ -3098,26 +3178,7 @@ function autoCookie() {
             } else if (
                 recommendation.type == "building" &&
                 Game.buyBulk == 100 &&
-                ((FrozenCookies.autoSpell == 3 &&
-                    recommendation.purchase.name == "You" &&
-                    Game.Objects["You"].amount >= 299) ||
-                    (M &&
-                        FrozenCookies.towerLimit &&
-                        recommendation.purchase.name == "Wizard tower" &&
-                        M.magic >= FrozenCookies.manaMax - 10) ||
-                    (FrozenCookies.mineLimit &&
-                        recommendation.purchase.name == "Mine" &&
-                        Game.Objects["Mine"].amount >=
-                            FrozenCookies.mineMax - 100) ||
-                    (FrozenCookies.factoryLimit &&
-                        recommendation.purchase.name == "Factory" &&
-                        Game.Objects["Factory"].amount >=
-                            FrozenCookies.factoryMax - 100) ||
-                    (FrozenCookies.autoDragonOrbs &&
-                        FrozenCookies.orbLimit &&
-                        recommendation.purchase.name == "You" &&
-                        Game.Objects["You"].amount >=
-                            FrozenCookies.orbMax - 100))
+                shouldDropBulkForLimits(recommendation.purchase)
             ) {
                 document.getElementById("storeBulk10").click();
                 safeBuy(recommendation.purchase, 1);
@@ -3125,32 +3186,40 @@ function autoCookie() {
             } else if (
                 recommendation.type == "building" &&
                 Game.buyBulk == 10 &&
-                ((FrozenCookies.autoSpell == 3 &&
-                    recommendation.purchase.name == "You" &&
-                    Game.Objects["You"].amount >= 389) ||
-                    (M &&
-                        FrozenCookies.towerLimit &&
-                        recommendation.purchase.name == "Wizard tower" &&
-                        M.magic >= FrozenCookies.manaMax - 2) ||
-                    (FrozenCookies.mineLimit &&
-                        recommendation.purchase.name == "Mine" &&
-                        Game.Objects["Mine"].amount >=
-                            FrozenCookies.mineMax - 10) ||
-                    (FrozenCookies.factoryLimit &&
-                        recommendation.purchase.name == "Factory" &&
-                        Game.Objects["Factory"].amount >=
-                            FrozenCookies.factoryMax - 10) ||
-                    (FrozenCookies.autoDragonOrbs &&
-                        FrozenCookies.orbLimit &&
-                        recommendation.purchase.name == "You" &&
-                        Game.Objects["You"].amount >=
-                            FrozenCookies.orbMax - 10))
+                shouldDropBulkForLimits(recommendation.purchase)
             ) {
                 document.getElementById("storeBulk1").click();
                 safeBuy(recommendation.purchase, 1);
                 document.getElementById("storeBulk10").click();
             } else if (recommendation.type == "building") {
-                safeBuy(recommendation.purchase, 1);
+                var spendableBulk = Game.cookies - delay;
+                var maxBulk =
+                    FrozenCookies.autoBulk == 2
+                        ? 100
+                        : FrozenCookies.autoBulk == 1
+                          ? 10
+                          : (Game.buyBulk == 100
+                              ? 100
+                              : Game.buyBulk == 10
+                                ? 10
+                                : 1);
+                var bulkCount = affordableBulkCount(
+                    recommendation.purchase,
+                    maxBulk,
+                    spendableBulk
+                );
+                if (bulkCount > 0) {
+                    if (FrozenCookies.purchaseLog == 1) {
+                        logEvent(
+                            "Store",
+                            "Autobought " +
+                                bulkCount +
+                                "x " +
+                                recommendation.purchase.name
+                        );
+                    }
+                    safeBuy(recommendation.purchase, bulkCount);
+                }
             } else {
                 recommendation.purchase.buy();
             }
