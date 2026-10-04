@@ -17,10 +17,25 @@ var scriptElement =
     document.getElementById("frozenCookieScript") !== null
         ? document.getElementById("frozenCookieScript")
         : document.getElementById("modscript_frozen_cookies");
-var baseUrl =
-    scriptElement !== null
-        ? scriptElement.getAttribute("src").replace(/\/frozen_cookies\.js$/, "")
-        : "https://github.erbkaiser.com/FrozenCookies/";
+var baseUrl;
+if (scriptElement !== null && scriptElement.getAttribute("src")) {
+    baseUrl = scriptElement
+        .getAttribute("src")
+        .replace(/\/frozen_cookies\.js.*$/, "");
+} else {
+    var foundSrc = null;
+    var allScripts = document.getElementsByTagName("script");
+    for (var si = 0; si < allScripts.length; si++) {
+        var ssrc = allScripts[si].getAttribute("src") || "";
+        if (ssrc.indexOf("frozen_cookies.js") !== -1) {
+            foundSrc = ssrc;
+            break;
+        }
+    }
+    baseUrl = foundSrc
+        ? foundSrc.replace(/\/frozen_cookies\.js.*$/, "")
+        : "https://darkred1145.github.io/FrozenCookies/";
+}
 var FrozenCookies = {
     baseUrl: baseUrl,
     branch: "erb-",
