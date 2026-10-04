@@ -2910,30 +2910,29 @@ function shouldDropBulkForLimits(building) {
 function affordableBulkCount(building, maxBulk, spendable) {
     // ponytail: bulk size from affordability only; upgrade when recommendation engine becomes bulk-aware (efficiency/cost for N).
     if (!building || maxBulk <= 0) return 0;
-    var candidates = maxBulk >= 100 ? [100, 10, 1] : maxBulk >= 10 ? [10, 1] : [1];
     var remaining = bulkLimitRemaining(building);
     if (remaining <= 0) return 0;
-    for (var i = 0; i < candidates.length; i++) {
-        var n = Math.min(candidates[i], remaining);
-        if (n <= 0) continue;
-        if (building.id === 7 && FrozenCookies.towerLimit && typeof M !== "undefined" && M) {
-            var n_try = n;
-            while (n_try > 1) {
-                if (magicMForTowers((building.amount || 0) + n_try, building.level || 1) <= (FrozenCookies.manaMax || 0)) break;
-                n_try = n_try >= 100 ? 10 : 1;
-            }
-            if (magicMForTowers((building.amount || 0) + n_try, building.level || 1) > (FrozenCookies.manaMax || 0)) continue;
-            n = n_try;
+    var cap = Math.min(maxBulk, remaining);
+    if (building.id === 7 && FrozenCookies.towerLimit) {
+        while (
+            cap > 0 &&
+            magicMForTowers((building.amount || 0) + cap, building.level || 1) >
+                (FrozenCookies.manaMax || 0)
+        ) {
+            cap -= 1;
         }
-        var bulkCost;
+        if (cap <= 0) return 0;
+    }
+    var costOf = function (n) {
         if (typeof building.getSumPrice === "function") {
-            bulkCost = building.getSumPrice(n);
+            return building.getSumPrice(n);
         } else if (typeof building.getPrice === "function") {
-            bulkCost = building.getPrice() * n;
-        } else {
-            bulkCost = (building.cost || 0) * n;
+            return building.getPrice() * n;
         }
-        if (spendable >= bulkCost) return n;
+        return (building.cost || 0) * n;
+    };
+    for (var n = cap; n >= 1; n--) {
+        if (spendable >= costOf(n)) return n;
     }
     return 0;
 }
