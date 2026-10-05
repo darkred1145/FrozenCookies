@@ -46,7 +46,7 @@
                 outline-offset: 2px;
             }
             .wrap {
-                max-width: 720px;
+                max-width: 1024px;
                 margin: 0 auto;
                 padding: 0 20px;
             }
@@ -123,24 +123,33 @@
                 color: var(--muted);
                 margin: 0 0 20px;
             }
-            dl.feats {
+            .grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                gap: 16px;
+            }
+            .card {
+                background: #241708;
+                border: 1px solid var(--line);
+                border-radius: 12px;
+                padding: 20px;
+            }
+            .card h3 {
+                margin: 0 0 8px;
+                font-size: 18px;
+            }
+            .card p,
+            .card ol {
                 margin: 0;
-            }
-            dl.feats > div {
-                padding: 14px 0;
-                border-top: 1px solid var(--line);
-            }
-            dl.feats > div:first-child {
-                border-top: none;
-            }
-            dl.feats dt {
-                font-weight: 700;
-                font-size: 17px;
-            }
-            dl.feats dd {
-                margin: 4px 0 0;
                 color: var(--muted);
                 font-size: 15px;
+            }
+            .card ol {
+                padding-left: 22px;
+                margin-bottom: 12px;
+            }
+            .card ol li {
+                margin-bottom: 6px;
             }
             .install h3 {
                 font-size: 18px;
@@ -158,23 +167,22 @@
                 margin-bottom: 6px;
             }
             .snippet {
-                display: grid;
-                grid-template-columns: 1fr auto;
-                gap: 10px;
-                align-items: center;
-                padding: 4px 0 4px;
+                background: #120b03;
+                border: 1px solid var(--line);
+                border-radius: 8px;
+                padding: 12px 14px;
             }
             .snippet code {
+                display: block;
                 font-size: 13px;
                 color: #fde68a;
                 font-family: ui-monospace, monospace;
-                overflow-x: auto;
-                white-space: nowrap;
-                padding: 10px 0;
-                scrollbar-width: none;
+                white-space: pre-wrap;
+                overflow-wrap: anywhere;
             }
-            .snippet code::-webkit-scrollbar {
-                display: none;
+            .snippet .copy-btn {
+                margin-top: 10px;
+                width: 100%;
             }
             .copy-btn {
                 font-family: inherit;
@@ -188,7 +196,6 @@
                 min-height: 44px;
                 cursor: pointer;
                 transition: border-color 200ms, color 200ms;
-                white-space: nowrap;
             }
             .copy-btn:hover {
                 border-color: var(--gold);
@@ -240,105 +247,106 @@
                 <p class="section-sub">
                     Six things it handles, so you can leave the tab open.
                 </p>
-                <dl class="feats">
-                    <div>
-                        <dt>Efficient autobuy</dt>
-                        <dd>
+                <div class="grid">
+                    <div class="card">
+                        <h3>Efficient autobuy</h3>
+                        <p>
                             Every building and upgrade gets ranked by what it
                             actually earns you. The best deal gets bought, on
                             its own.
-                        </dd>
+                        </p>
                     </div>
-                    <div>
-                        <dt>Real bulk buying</dt>
-                        <dd>
+                    <div class="card">
+                        <h3>Real bulk buying</h3>
+                        <p>
                             Set x10 or x100 and it buys the biggest chunk you
                             can afford while keeping your bank intact.
-                        </dd>
+                        </p>
                     </div>
-                    <div>
-                        <dt>Golden cookies and timers</dt>
-                        <dd>
+                    <div class="card">
+                        <h3>Golden cookies and timers</h3>
+                        <p>
                             Clicks golden cookies, reindeer, and fortunes the
                             moment they show up. Spawn timers stay on screen
                             even when one is overdue.
-                        </dd>
+                        </p>
                     </div>
-                    <div>
-                        <dt>Spells and combos</dt>
-                        <dd>
+                    <div class="card">
+                        <h3>Spells and combos</h3>
+                        <p>
                             Casts grimoire spells for you, chains double FTHOF
                             combos, and never buys past your mana cap.
-                        </dd>
+                        </p>
                     </div>
-                    <div>
-                        <dt>Pantheon and dragon</dt>
-                        <dd>
+                    <div class="card">
+                        <h3>Pantheon and dragon</h3>
+                        <p>
                             Slots your gods, keeps Cyclius rotating, upgrades
                             and pets the dragon, sets your auras.
-                        </dd>
+                        </p>
                     </div>
-                    <div>
-                        <dt>Banks and seasons</dt>
-                        <dd>
+                    <div class="card">
+                        <h3>Banks and seasons</h3>
+                        <p>
                             Holds lucky, harvest, and manual banks. Farms
                             seasons in your fixed order or by best value.
-                        </dd>
+                        </p>
                     </div>
-                </dl>
+                </div>
             </section>
 
             <section id="install" class="install" aria-labelledby="install-h">
                 <h2 id="install-h">Install</h2>
                 <p class="section-sub">Three ways in, pick one.</p>
-
-                <h3>Web console</h3>
-                <ol>
-                    <li>Open Cookie Clicker.</li>
-                    <li>Hit F12 and open the Console tab.</li>
-                    <li>Paste the line below and hit enter.</li>
-                </ol>
-                <div class="snippet">
-                    <code id="snippet-web">Game.LoadMod("https://darkred1145.github.io/FrozenCookies/frozen_cookies.js");</code>
-                    <button
-                        class="copy-btn"
-                        data-copy="snippet-web"
-                        type="button"
-                    >
-                        Copy
-                    </button>
-                </div>
-
-                <hr class="rule" />
-
-                <h3>Steam Workshop</h3>
-                <ol>
-                    <li>Subscribe to Frozen Cookies.</li>
-                    <li>Restart Cookie Clicker.</li>
-                    <li>Flip it on under Options, Manage mods.</li>
-                </ol>
-                <p class="section-sub">
-                    No Workshop? Copy the
-                    <code>Steam/FrozenCookies</code> folder into
-                    <code>mods/local</code> instead.
-                </p>
-
-                <hr class="rule" />
-
-                <h3>Tampermonkey</h3>
-                <ol>
-                    <li>Make a userscript for the game URL.</li>
-                    <li>Point it at the mod file below.</li>
-                </ol>
-                <div class="snippet">
-                    <code id="snippet-tm">https://darkred1145.github.io/FrozenCookies/frozen_cookies.js</code>
-                    <button
-                        class="copy-btn"
-                        data-copy="snippet-tm"
-                        type="button"
-                    >
-                        Copy
-                    </button>
+                <div class="grid">
+                    <div class="card">
+                        <h3>Web console</h3>
+                        <ol>
+                            <li>Open Cookie Clicker.</li>
+                            <li>Hit F12 and open the Console tab.</li>
+                            <li>Paste the line below and hit enter.</li>
+                        </ol>
+                        <div class="snippet">
+                            <code id="snippet-web">Game.LoadMod("https://darkred1145.github.io/FrozenCookies/frozen_cookies.js");</code>
+                            <button
+                                class="copy-btn"
+                                data-copy="snippet-web"
+                                type="button"
+                            >
+                                Copy
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3>Steam Workshop</h3>
+                        <ol>
+                            <li>Subscribe to Frozen Cookies.</li>
+                            <li>Restart Cookie Clicker.</li>
+                            <li>Flip it on under Options, Manage mods.</li>
+                        </ol>
+                        <p>
+                            No Workshop? Copy the
+                            <code>Steam/FrozenCookies</code> folder into
+                            <code>mods/local</code> instead.
+                        </p>
+                    </div>
+                    <div class="card">
+                        <h3>Tampermonkey</h3>
+                        <ol>
+                            <li>Make a userscript for the game URL.</li>
+                            <li>Point it at the mod file below.</li>
+                        </ol>
+                        <div class="snippet">
+                            <code id="snippet-tm">https://darkred1145.github.io/FrozenCookies/frozen_cookies.js</code>
+                            <button
+                                class="copy-btn"
+                                data-copy="snippet-tm"
+                                type="button"
+                            >
+                                Copy
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </section>
         </main>
