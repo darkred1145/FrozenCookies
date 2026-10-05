@@ -722,6 +722,8 @@ function updateManBank(base) {
 
 
 
+//cyclePreference lives in fc_button.js (loaded last, wins); kept here
+// as fallback for Steam/local loads where fc_button may not have run yet.
 function cyclePreference(preferenceName) {
     var preference = FrozenCookies.preferenceValues[preferenceName];
     if (preference) {
@@ -1901,16 +1903,15 @@ function buildingStats(recalculate) {
             );
             //If autocasting Spontaneous Edifice, don't buy any You after 399
             if (
-                M &&
                 FrozenCookies.autoCasting == 5 &&
                 Game.Objects["You"].amount >= 399
             )
                 buildingBlacklist.push(19);
             //Stop buying wizard towers at max Mana if enabled
+            // (uses live magicM when grimoire loaded, else tower-count math)
             if (
-                M &&
                 FrozenCookies.towerLimit &&
-                M.magicM >= FrozenCookies.manaMax
+                towerMaxMana() >= FrozenCookies.manaMax
             )
                 buildingBlacklist.push(7);
             //Stop buying Mines if at set limit
@@ -2648,6 +2649,14 @@ function viewStatGraphs() {
     }
 }
 
+function cacheChanged(oldVal, newVal, epsilon) {
+    // Relative epsilon, with absolute floor so zero bases don't spin (#lag).
+    var diff = Math.abs(oldVal - newVal);
+    if (diff <= 1e-9) return false;
+    var base = Math.max(Math.abs(oldVal), Math.abs(newVal), 1);
+    return diff > base * epsilon;
+}
+
 function updateCaches() {
     var recommendation,
         currentBank,
@@ -2666,22 +2675,22 @@ function updateCaches() {
         currentUpgradeCount = Game.UpgradesInStore.length;
         currentCPS = Game.cookiesPs;
 
-        if (Math.abs(FrozenCookies.lastCPS - currentCPS) > FrozenCookies.lastCPS * epsilon) {
+        if (cacheChanged(FrozenCookies.lastCPS, currentCPS, epsilon)) {
             FrozenCookies.recalculateCaches = true;
             FrozenCookies.lastCPS = currentCPS;
         }
 
-        if (Math.abs(FrozenCookies.currentBank.cost - currentBank.cost) > FrozenCookies.currentBank.cost * epsilon) {
+        if (cacheChanged(FrozenCookies.currentBank.cost, currentBank.cost, epsilon)) {
             FrozenCookies.recalculateCaches = true;
             FrozenCookies.currentBank = currentBank;
         }
 
-        if (Math.abs(FrozenCookies.targetBank.cost - targetBank.cost) > FrozenCookies.targetBank.cost * epsilon) {
+        if (cacheChanged(FrozenCookies.targetBank.cost, targetBank.cost, epsilon)) {
             FrozenCookies.recalculateCaches = true;
             FrozenCookies.targetBank = targetBank;
         }
 
-        if (Math.abs(FrozenCookies.lastCookieCPS - currentCookieCPS) > FrozenCookies.lastCookieCPS * epsilon) {
+        if (cacheChanged(FrozenCookies.lastCookieCPS, currentCookieCPS, epsilon)) {
             FrozenCookies.recalculateCaches = true;
             FrozenCookies.lastCookieCPS = currentCookieCPS;
         }
@@ -2927,6 +2936,17 @@ function magicMForTowers(towers, level) {
     var t = Math.max(towers, 1);
     var l = Math.max(level, 1);
     return Math.floor(4 + Math.pow(t, 0.6) + Math.log((t + (l - 1) * 10) / 15 + 1) * 15);
+}
+
+// Current max mana: live grimoire value when loaded, else computed from
+// tower count/level so the cap works before the minigame loads (#204).
+function towerMaxMana() {
+    if (typeof M !== "undefined" && M && typeof M.magicM !== "undefined") {
+        return M.magicM;
+    }
+    var towers = Game.Objects["Wizard tower"];
+    if (!towers) return 0;
+    return magicMForTowers(towers.amount || 0, towers.level || 1);
 }
 
 function bulkLimitRemaining(building) {
