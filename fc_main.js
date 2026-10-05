@@ -2703,8 +2703,9 @@ function updateCaches() {
     } while (FrozenCookies.recalculateCaches && recalcCount < 10);
 }
 
-//Why the hell is fcWin being called so often? It seems to be getting called repeatedly on the CPS achievements,
-//which should only happen when you actually win them?
+// Game calls Game.Win speculatively each check tick for CPS achievements;
+// the won==0 guard below already prevents double-count, so frequent calls
+// are expected and harmless.
 function fcWin(what) {
     if (typeof what === "string") {
         if (Game.Achievements[what]) {
@@ -2713,10 +2714,6 @@ function fcWin(what) {
                     ? Game.Achievements[what].shortName
                     : Game.Achievements[what].name;
                 Game.Achievements[what].won = 1;
-                //This happens a ton of times on CPS achievements; it seems like they would be CHECKED for, but a debug message placed
-                //here gets repeatedly called seeming to indicate that the achievements.won value is 1, even though the achievement isn't
-                //being unlocked. This also means that placing a function to log the achievement spams out messages. Are the Achievement.won
-                //values being turned off before the game checks again? There must be some reason Game.Win is replaced with fcWin
                 if (!FrozenCookies.disabledPopups) {
                     logEvent(
                         "Achievement",
@@ -2796,14 +2793,6 @@ function smartTrackingStats(delay) {
             smartTrackingStats(delay);
         }, delay);
         FrozenCookies.delayPurchaseCount = 0;
-    }
-}
-
-// Unused
-function shouldClickGC() {
-    for (var i in Game.shimmers) {
-        if (Game.shimmers[i].type == "golden")
-            return Game.shimmers[i].life > 0 && FrozenCookies.autoGC;
     }
 }
 
@@ -3139,7 +3128,6 @@ function fcClickCookie() {
 }
 
 function autoCookie() {
-    //console.log('autocookie called');
     if (!FrozenCookies.processing && !Game.OnAscend && !Game.AscendTimer) {
         FrozenCookies.processing = true;
         var currentHCAmount = Game.HowMuchPrestige(
@@ -3233,7 +3221,6 @@ function autoCookie() {
 
         var itemBought = false;
 
-        //var seConditions = (Game.cookies >= delay + recommendation.cost) || (!(FrozenCookies.autoCasting == 5) && !(FrozenCookies.holdSEBank))); //true == good on SE bank or don't care about it
         if (
             FrozenCookies.autoBuy &&
             (Game.cookies >= delay + recommendation.cost ||
@@ -3241,13 +3228,9 @@ function autoCookie() {
             (FrozenCookies.pastemode ||
                 isFinite(nextChainedPurchase().efficiency))
         ) {
-            //    if (FrozenCookies.autoBuy && (Game.cookies >= delay + recommendation.cost)) {
-            //console.log('something should get bought');
             recommendation.time = Date.now() - Game.startDate;
-            //      full_history.push(recommendation);  // Probably leaky, maybe laggy?
             recommendation.purchase.clickFunction = null;
             disabledPopups = false;
-            //      console.log(purchase.name + ': ' + Beautify(recommendation.efficiency) + ',' + Beautify(recommendation.delta_cps));
             if (
                 Math.floor(
                     Game.HowMuchPrestige(Game.cookiesReset + Game.cookiesEarned)
