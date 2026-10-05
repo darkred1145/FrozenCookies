@@ -1490,6 +1490,56 @@ function chainBank() {
     //  return baseCps() * 60 * 60 * 6 * 4;
 }
 
+// Garden plant keys matching harvestBank's setHarvestBankPlant order.
+var gardenPlantKeys = [
+    null,
+    "bakeberry",
+    "chocoroot",
+    "whiteChocoroot",
+    "queenbeet",
+    "duketater",
+    "crumbspore",
+    "doughshroom",
+];
+
+function autoGardenAction() {
+    if (!G || !FrozenCookies.autoGarden) return;
+    if (G.freeze) return;
+    var plantKey = gardenPlantKeys[FrozenCookies.setHarvestBankPlant];
+    if (!plantKey) return;
+    var plant = G.plants[plantKey];
+    if (!plant || !plant.plantable) return;
+    var delay = delayAmount();
+    for (var y = 0; y < 6; y++) {
+        for (var x = 0; x < 6; x++) {
+            if (!G.isTileUnlocked || G.isTileUnlocked(x, y)) {
+                var tile = G.plot[y] && G.plot[y][x];
+                if (!tile || tile[0] < 1) continue;
+                var growing = G.plantsById[tile[0] - 1];
+                if (!growing || growing.key !== plantKey) continue;
+                if (tile[1] < growing.mature) continue;
+                if (Game.cookies < delay) continue;
+                G.harvest(x, y);
+                FrozenCookies.autobuyCount += 1;
+                if (FrozenCookies.autoGarden == 2 && G.canPlant(plant)) {
+                    G.seedSelected = plant.id;
+                    G.clickTile(x, y);
+                }
+                logEvent(
+                    "AutoGarden",
+                    "Harvested mature " +
+                        plant.name +
+                        " at (" +
+                        x +
+                        "," +
+                        y +
+                        ")"
+                );
+            }
+        }
+    }
+}
+
 function harvestBank() {
     if (!FrozenCookies.setHarvestBankPlant) return 0;
 
@@ -3615,6 +3665,11 @@ function FCStart() {
         FrozenCookies.otherUpgradesBot = 0;
     }
 
+    if (FrozenCookies.autoGardenBot) {
+        clearInterval(FrozenCookies.autoGardenBot);
+        FrozenCookies.autoGardenBot = 0;
+    }
+
     if (FrozenCookies.autoCycliusBot) {
         clearInterval(FrozenCookies.autoCycliusBot);
         FrozenCookies.autoCycliusBot = 0;
@@ -3805,6 +3860,13 @@ function FCStart() {
         FrozenCookies.otherUpgradesBot = setInterval(
             buyOtherUpgrades,
             FrozenCookies.frequency * 10
+        );
+    }
+
+    if (FrozenCookies.autoGarden && FrozenCookies.setHarvestBankPlant) {
+        FrozenCookies.autoGardenBot = setInterval(
+            autoGardenAction,
+            FrozenCookies.frequency * 50
         );
     }
 

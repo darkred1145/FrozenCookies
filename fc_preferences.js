@@ -486,6 +486,15 @@ FrozenCookies.preferenceValues = {
         default: 0,
         extras: '<a class="option" id="maxSpecials" onclick="updateMaxSpecials(\'maxSpecials\');">${maxSpecials} Building specials</a>',
     },
+    autoGarden: {
+        hint: "Auto-harvest mature garden plants of the bank plant, replant when affordable.",
+        display: [
+            "Auto Garden OFF",
+            "Auto Garden HARVEST",
+            "Auto Garden HARVEST + REPLANT",
+        ],
+        default: 0,
+    },
 
     // Other options
     otherOptions: {
