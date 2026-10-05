@@ -17,11 +17,13 @@
         <style>
             :root {
                 --gold: #f59e0b;
+                --gold-soft: #fbbf24;
                 --accent: #7c3aed;
-                --bg: #1a1005;
+                --bg: #0f0a04;
+                --card: #1c130a;
                 --fg: #fff7ed;
                 --muted: #d6b58c;
-                --line: #4a2f10;
+                --line: #5a3a15;
             }
             * {
                 box-sizing: border-box;
@@ -31,7 +33,18 @@
             }
             body {
                 margin: 0;
-                background: var(--bg);
+                background:
+                    radial-gradient(
+                        640px 320px at 20% -40px,
+                        rgba(245, 158, 11, 0.12),
+                        transparent 70%
+                    ),
+                    radial-gradient(
+                        640px 320px at 85% 0px,
+                        rgba(124, 58, 237, 0.14),
+                        transparent 70%
+                    ),
+                    var(--bg);
                 color: var(--fg);
                 font-family: "Chakra Petch", system-ui, sans-serif;
                 font-size: 16px;
@@ -51,27 +64,43 @@
                 padding: 0 20px;
             }
             header.hero {
-                padding: 72px 20px 32px;
+                padding: 88px 20px 40px;
+                text-align: left;
             }
             .kicker {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
                 font-size: 13px;
                 letter-spacing: 2px;
                 text-transform: uppercase;
-                color: var(--muted);
-                margin: 0 0 12px;
+                color: var(--gold-soft);
+                background: rgba(245, 158, 11, 0.1);
+                border: 1px solid var(--line);
+                border-radius: 999px;
+                padding: 6px 16px;
+                margin: 0 0 20px;
+            }
+            .kicker .dot {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                background: var(--gold);
             }
             h1 {
                 font-family: "Russo One", sans-serif;
-                font-size: clamp(36px, 7vw, 60px);
+                font-size: clamp(44px, 8vw, 76px);
                 margin: 0 0 12px;
-                line-height: 1.05;
+                line-height: 1;
+                letter-spacing: -1px;
             }
             h1 .gold {
                 color: var(--gold);
             }
             .lede {
                 color: var(--muted);
-                font-size: 18px;
+                font-size: 19px;
+                max-width: 560px;
                 margin: 0 0 28px;
             }
             .cta-row {
@@ -129,18 +158,22 @@
                 gap: 16px;
             }
             .card {
-                background: #241708;
+                background: linear-gradient(180deg, #221709 0%, var(--card) 100%);
                 border: 1px solid var(--line);
-                border-radius: 12px;
-                padding: 20px;
+                border-radius: 16px;
+                padding: 22px;
+                transition: border-color 200ms, transform 200ms;
+            }
+            .card:hover {
+                border-color: var(--gold);
             }
             .card svg.icon {
-                width: 28px;
-                height: 28px;
+                width: 30px;
+                height: 30px;
                 color: var(--gold);
             }
             .card h3 {
-                margin: 0 0 8px;
+                margin: 14px 0 8px;
                 font-size: 18px;
             }
             .card p,
@@ -221,15 +254,25 @@
                     scroll-behavior: auto;
                 }
                 .btn,
-                .copy-btn {
+                .copy-btn,
+                .card {
                     transition: none;
+                }
+            }
+            @media (max-width: 640px) {
+                header.hero {
+                    padding: 56px 20px 28px;
+                }
+                .cta-row .btn {
+                    flex: 1 1 100%;
+                    text-align: center;
                 }
             }
         </style>
     </head>
     <body>
         <header class="hero wrap">
-            <p class="kicker">Cookie Clicker mod</p>
+            <p class="kicker"><span class="dot"></span>Cookie Clicker mod</p>
             <h1>Frozen<span class="gold">Cookies</span></h1>
             <p class="lede">
                 It plays Cookie Clicker for you: picks the best buys, clicks
