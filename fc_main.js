@@ -2129,9 +2129,28 @@ function isUnavailable(upgrade, upgradeBlacklist) {
         (upgrade.season &&
             (!haveAll(Game.season) ||
                 (upgrade.season != seasons[FrozenCookies.defaultSeason] &&
-                    haveAll(upgrade.season))));
+                    haveAll(upgrade.season)) ||
+                (FrozenCookies.seasonOrder &&
+                    haveAll(upgrade.season) &&
+                    !isNextSeasonInOrder(upgrade.season))));
 
     return result;
+}
+
+// Fixed season farm order for seasonOrder mode (#67): seasons whose drops
+// are all collected are skipped until the next unfinished season in order.
+var seasonFarmOrder = ["valentines", "easter", "halloween", "christmas", "fools"];
+
+function nextSeasonTarget() {
+    for (var i = 0; i < seasonFarmOrder.length; i++) {
+        if (!haveAll(seasonFarmOrder[i])) return seasonFarmOrder[i];
+    }
+    return null;
+}
+
+function isNextSeasonInOrder(season) {
+    if (!FrozenCookies.seasonOrder) return true;
+    return nextSeasonTarget() === season;
 }
 
 function santaStats() {

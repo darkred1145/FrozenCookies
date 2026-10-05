@@ -440,6 +440,11 @@ FrozenCookies.preferenceValues = {
         display: ["Auto-Halloween Switch OFF", "Auto-Halloween Switch ON"],
         default: 0,
     },
+    seasonOrder: {
+        hint: "Farm seasons in fixed order (valentines, easter, halloween, christmas, fools) instead of efficiency picks.",
+        display: ["Season Order OFF", "Season Order ON"],
+        default: 0,
+    },
 
     //Bank options
     bankOptions: {
