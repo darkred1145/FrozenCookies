@@ -698,8 +698,21 @@ function autoCast() {
 }
 
 // Thank goodness for static variables otherwise this function would not have worked as intended.
-function autoFTHOFComboAction() {
-    if (!M) return;
+// Rebuy towers after a combo sell without growing past the mana cap.
+// Pre-sell counts were computed from the pre-sell tower total, so a plain
+// rebuy restores but never exceeds the original count; the towerLimit path
+// additionally clamps to the affordable count for manaMax (#204).
+function rebuyWizardTowers(count) {
+    var towers = Game.Objects["Wizard tower"];
+    var n = count;
+    if (FrozenCookies.towerLimit) {
+        n = affordableBulkCount(towers, count, Game.cookies - delayAmount());
+    }
+    if (n > 0) safeBuy(towers, n);
+    return n;
+}
+
+function autoFTHOFComboAction() {    if (!M) return;
     if (FrozenCookies.autoFTHOFCombo == 0) return;
 
     // Prereqs check
@@ -1122,26 +1135,23 @@ function autoFTHOFComboAction() {
             M.computeMagicM(); //Recalc max after selling
             M.castSpell(M.spellsById[1]);
             logEvent("autoFTHOFCombo", "Double cast Force the Hand of Fate");
+            // ponytail: rebuy restores pre-sell tower count; only path that
+            // grows past the mana cap is SugarLevel 10 + towerLimit + count<=497,
+            // capped at the affordable count for manaMax.
+            var rebuyTowers = autoFTHOFComboAction.count;
             if (
                 FrozenCookies.towerLimit &&
-                FrozenCookies.manaMax <= 100 &&
-                autoFTHOFComboAction.count <= 497
-            ) {
-                safeBuy(
-                    Game.Objects["Wizard tower"],
-                    autoFTHOFComboAction.count
-                );
-            } else if (
-                FrozenCookies.towerLimit &&
-                FrozenCookies.manaMax <= 100 &&
+                (FrozenCookies.manaMax || 0) <= 100 &&
                 SugarLevel == 10
             ) {
-                safeBuy(Game.Objects["Wizard tower"], 486);
-            } else {
-                safeBuy(
+                rebuyTowers = affordableBulkCount(
                     Game.Objects["Wizard tower"],
-                    autoFTHOFComboAction.count
+                    rebuyTowers,
+                    Game.cookies - delayAmount()
                 );
+            }
+            if (rebuyTowers > 0) {
+                safeBuy(Game.Objects["Wizard tower"], rebuyTowers);
             }
             FrozenCookies.autobuyCount += 1;
             // Turn autoBuy back on if it was on before
@@ -1459,9 +1469,7 @@ function auto100ConsistencyComboAction() {
             if (M.magic >= 30) {
                 M.castSpell(M.spellsById[1]);
                 logEvent("auto100ConsistencyCombo", "Cast FTHOF 2");
-                Game.Objects["Wizard tower"].buy(
-                    auto100ConsistencyComboAction.countWizard
-                );
+                rebuyWizardTowers(auto100ConsistencyComboAction.countWizard);
                 FrozenCookies.autobuyCount += 1;
                 auto100ConsistencyComboAction.state = 8;
             }
@@ -1492,9 +1500,7 @@ function auto100ConsistencyComboAction() {
             if (M.magic >= 30) {
                 M.castSpell(M.spellsById[1]);
                 logEvent("auto100ConsistencyCombo", "Cast FTHOF 4");
-                Game.Objects["Wizard tower"].buy(
-                    auto100ConsistencyComboAction.countWizard
-                );
+                rebuyWizardTowers(auto100ConsistencyComboAction.countWizard);
                 FrozenCookies.autobuyCount += 1;
                 auto100ConsistencyComboAction.state = 11;
             }

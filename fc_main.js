@@ -809,10 +809,22 @@ function autoHalloweenAction() {
 function autoBlacklistOff() {
     switch (FrozenCookies.blacklist) {
         case 1:
-            FrozenCookies.blacklist = Game.cookiesEarned >= 1000000 ? 0 : 1;
+            // Wait for the game to actually award the achievement before
+            // lifting the blacklist, else upgrades sneak in first (#187).
+            FrozenCookies.blacklist =
+                Game.cookiesEarned >= 1000000 &&
+                Game.Achievements["Neverclick"] &&
+                Game.Achievements["Neverclick"].won
+                    ? 0
+                    : 1;
             break;
         case 2:
-            FrozenCookies.blacklist = Game.cookiesEarned >= 1000000000 ? 0 : 2;
+            FrozenCookies.blacklist =
+                Game.cookiesEarned >= 1000000000 &&
+                Game.Achievements["Hardcore"] &&
+                Game.Achievements["Hardcore"].won
+                    ? 0
+                    : 2;
             break;
         case 3:
             FrozenCookies.blacklist =
@@ -1588,6 +1600,10 @@ function cookieEfficiency(startingPoint, bankAmount) {
 
 function bestBank(minEfficiency) {
     var results = {};
+    // No golden-cookie income expected: skip lucky banks entirely rather
+    // than idling on a bank that never pays out (#200).
+    var noGcIncome =
+        FrozenCookies.simulatedGCPercent == 0 && !FrozenCookies.autoGC;
     var edifice =
         FrozenCookies.autoCasting == 5 || FrozenCookies.holdSEBank
             ? edificeBank()
@@ -1600,7 +1616,8 @@ function bestBank(minEfficiency) {
             ? manualBank()
             : 0;
     var bankOverride = Math.max(edifice, harvest, manual);
-    var bankLevels = [0, luckyBank(), luckyFrenzyBank()]
+    var bankLevels = noGcIncome ? [0] : [0, luckyBank(), luckyFrenzyBank()];
+    bankLevels = bankLevels
         .sort(function (a, b) {
             return b - a;
         })
@@ -3817,16 +3834,23 @@ var _oldAutoCookie = autoCookie;
 autoCookie = function () {
     var chainRec = nextChainedPurchase();
     if (
+        FrozenCookies.autoBuy &&
         chainRec &&
         chainRec.type === "upgrade" &&
         isRewardCookie(chainRec.purchase)
     ) {
+        // Respect autobuy: these step outside the normal recommendation path,
+        // so gate explicitly and log like other autobuys (#201).
         // Temporarily ignore limits and buy up to required amount for each building
         var targets = getRewardCookieBuildingTargets(chainRec.purchase);
         targets.forEach(function (t) {
             var obj = Game.ObjectsById[t.id];
-            if (obj && obj.amount < t.amount) {
+            if (obj && obj.amount < t.amount && Game.cookies >= obj.getPrice()) {
                 obj.buy(t.amount - obj.amount);
+                logEvent(
+                    "RewardCookie",
+                    "Bought " + (t.amount - obj.amount) + "x " + obj.name
+                );
             }
         });
         // Try to buy the reward cookie if unlocked and affordable
@@ -3836,6 +3860,7 @@ autoCookie = function () {
             Game.cookies >= chainRec.purchase.getPrice()
         ) {
             chainRec.purchase.buy();
+            logEvent("RewardCookie", "Bought " + chainRec.purchase.name);
             restoreBuildingLimits();
         }
         // Continue with normal autobuy for other things
