@@ -73,6 +73,12 @@ FrozenCookies.preferenceValues = {
         default: 0,
         extras: '<a class="option" id="factoryMax" onclick="updateFactoryMax(\'factoryMax\');">${factoryMax} Factories</a>',
     },
+    bankLimit: {
+        hint: "Limit banks for Godzamok combos.",
+        display: ["Bank Limit OFF", "Bank Limit ON"],
+        default: 0,
+        extras: '<a class="option" id="bankMax" onclick="updateBankMax(\'bankMax\');">${bankMax} Banks</a>',
+    },
     pastemode: {
         hint: "Buy least efficient option (⚠️ not recommended).",
         display: ["Pastemode OFF", "Pastemode ON"],

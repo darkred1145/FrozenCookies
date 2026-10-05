@@ -304,6 +304,7 @@ function setOverrides(gameSaveData) {
         // building max values
         FrozenCookies.mineMax = preferenceParse("mineMax", 0);
         FrozenCookies.factoryMax = preferenceParse("factoryMax", 0);
+        FrozenCookies.bankMax = preferenceParse("bankMax", 0);
         FrozenCookies.manaMax = preferenceParse("manaMax", 0);
         FrozenCookies.orbMax = preferenceParse("orbMax", 0);
 
@@ -479,6 +480,7 @@ function saveFCData() {
     saveString.HCAscendAmount = FrozenCookies.HCAscendAmount;
     saveString.mineMax = FrozenCookies.mineMax;
     saveString.factoryMax = FrozenCookies.factoryMax;
+    saveString.bankMax = FrozenCookies.bankMax;
     saveString.minCpSMult = FrozenCookies.minCpSMult;
     saveString.minLoanMult = FrozenCookies.minLoanMult;
     saveString.minASFMult = FrozenCookies.minASFMult;
@@ -667,6 +669,15 @@ function updateFactoryMax(base) {
     userInputPrompt(
         "Factory Cap!",
         "How many Factories should autoBuy stop at?",
+        FrozenCookies[base],
+        storeNumberCallback(base, 0)
+    );
+}
+
+function updateBankMax(base) {
+    userInputPrompt(
+        "Bank Cap!",
+        "How many Banks should autoBuy stop at?",
         FrozenCookies[base],
         storeNumberCallback(base, 0)
     );
@@ -905,6 +916,8 @@ function recommendedSettingsAction() {
         FrozenCookies.mineMax = 500;
         FrozenCookies.factoryLimit = 1;
         FrozenCookies.factoryMax = 500;
+        FrozenCookies.bankLimit = 0;
+        FrozenCookies.bankMax = 500;
         FrozenCookies.pastemode = 0;
         // other auto options
         FrozenCookies.autoAscendToggle = 0;
@@ -1912,6 +1925,12 @@ function buildingStats(recalculate) {
                 Game.Objects["Factory"].amount >= FrozenCookies.factoryMax
             )
                 buildingBlacklist.push(4);
+            //Stop buying Banks if at set limit
+            if (
+                FrozenCookies.bankLimit &&
+                Game.Objects["Bank"].amount >= FrozenCookies.bankMax
+            )
+                buildingBlacklist.push(5);
             //Stop buying Yous if at set limit
             if (
                 FrozenCookies.autoDragonOrbs &&
@@ -2901,6 +2920,9 @@ function bulkLimitRemaining(building) {
     if (building.id === 4 && FrozenCookies.factoryLimit) {
         return Math.max(0, (FrozenCookies.factoryMax || 0) - amount);
     }
+    if (building.id === 5 && FrozenCookies.bankLimit) {
+        return Math.max(0, (FrozenCookies.bankMax || 0) - amount);
+    }
     if (building.id === 19) {
         var remaining = Infinity;
         if (FrozenCookies.autoCasting == 5) remaining = Math.min(remaining, 399 - amount);
@@ -3003,8 +3025,9 @@ function autoGodzamokAction() {
         //if (Game.Objects["Mine"].amount < 10 || Game.Objects["Factory"].amount < 10) return;
         var countMine = Game.Objects["Mine"].amount;
         var countFactory = Game.Objects["Factory"].amount;
+        var countBank = Game.Objects["Bank"].amount;
 
-        //Automatically sell all mines and factories
+        //Automatically sell all mines, factories and banks (if bank limit set)
         if (
             !Game.hasBuff("Devastation") &&
             !Game.hasBuff("Cursed finger") &&
@@ -3012,6 +3035,9 @@ function autoGodzamokAction() {
         ) {
             Game.Objects["Mine"].sell(countMine);
             Game.Objects["Factory"].sell(countFactory);
+            if (FrozenCookies.bankLimit) {
+                Game.Objects["Bank"].sell(countBank);
+            }
             //Rebuy mines
             if (FrozenCookies.mineLimit) {
                 safeBuy(Game.Objects["Mine"], FrozenCookies.mineMax);
@@ -3039,6 +3065,15 @@ function autoGodzamokAction() {
                 logEvent(
                     "AutoGodzamok",
                     "Bought " + countFactory + " factories"
+                );
+            }
+            //Rebuy banks (only when bank fodder enabled, else untouched)
+            if (FrozenCookies.bankLimit) {
+                safeBuy(Game.Objects["Bank"], FrozenCookies.bankMax);
+                FrozenCookies.autobuyCount += 1;
+                logEvent(
+                    "AutoGodzamok",
+                    "Bought " + FrozenCookies.bankMax + " banks"
                 );
             }
         }
@@ -3828,6 +3863,11 @@ function restoreBuildingLimits() {
         var obj = Game.Objects["Factory"];
         if (obj.amount > FrozenCookies.factoryMax)
             obj.sell(obj.amount - FrozenCookies.factoryMax);
+    }
+    if (FrozenCookies.bankLimit) {
+        var bank = Game.Objects["Bank"];
+        if (bank.amount > FrozenCookies.bankMax)
+            bank.sell(bank.amount - FrozenCookies.bankMax);
     }
     if (FrozenCookies.autoDragonOrbs && FrozenCookies.orbLimit) {
         var obj = Game.Objects["You"];
