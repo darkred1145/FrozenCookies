@@ -1041,9 +1041,16 @@ function cumulativeProbability(listType, start, stop) {
 }
 
 function probabilitySpan(listType, start, endProbability) {
-    var startProbability = getProbabilityList(listType)[start];
+    var list = getProbabilityList(listType);
+    var startProbability = list[start];
+    // Past the end of the precomputed table the game can still be waiting
+    // (spawn chance has a long tail). Clamp: report max span as overdue
+    // rather than returning garbage that hides the timers (#61).
+    if (typeof startProbability === "undefined" || startProbability >= 1) {
+        return list.length;
+    }
     return _.sortedIndex(
-        getProbabilityList(listType),
+        list,
         startProbability + endProbability - startProbability * endProbability
     );
 }

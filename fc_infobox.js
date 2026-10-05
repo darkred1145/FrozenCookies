@@ -352,25 +352,35 @@ function updateTimers() {
             });
         }
     }
-    if (gc_delay > 0) {
+    if (gc_delay > 0 || gc_max_delay > 0 || gc_min_delay > 0) {
+        // Overdue (past the precomputed table) shows 0s remaining, never hides (#61).
+        var gcMaxText = timeDisplay(
+            Math.max((gc_max_delay * maxCookieTime()) / Game.fps, 0)
+        );
+        var gcEstText = timeDisplay(
+            Math.max((gc_delay * maxCookieTime()) / Game.fps, 0)
+        );
+        var gcMinText = timeDisplay(
+            Math.max((gc_min_delay * maxCookieTime()) / Game.fps, 0)
+        );
         t_draw.push({
             f_percent: gc_max_delay,
             c1: "rgba(255, 155, 0, 1)",
             name: "GC Maximum (99%)",
-            display: timeDisplay((gc_max_delay * maxCookieTime()) / Game.fps),
+            display: gcMaxText,
         });
         t_draw.push({
             f_percent: gc_delay,
             c1: "rgba(255, 222, 95, 1)",
             name: "GC Estimate (50%)",
-            display: timeDisplay((gc_delay * maxCookieTime()) / Game.fps),
+            display: gcEstText,
             overlay: true,
         });
         t_draw.push({
             f_percent: gc_min_delay,
             c1: "rgba(255, 235, 0, 1)",
             name: "GC Minimum (1%)",
-            display: timeDisplay((gc_min_delay * maxCookieTime()) / Game.fps),
+            display: gcMinText,
             overlay: true,
         });
     }
