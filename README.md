@@ -768,14 +768,14 @@ For more issues or feature requests, see the [GitHub issues page](https://github
 | **Other Upgrades**    | Buys upgrades that don’t directly boost CpS (which Autobuy would otherwise skip). |
 | **Auto Blacklist**    | Disables the selected blacklist once its goal is achieved. |
 | **Blacklist**         | Choose restrictions for Speedrun/Hardcore achievements, Grandmapocalypse, or to block all building purchases. |
-| **Mine/Factory Limit**| Caps mines/factories (used by Auto-Godzamok). Recommended: ~500 for mid-game, 800+ for late game (factories usually 50–100 less than mines). |
+| **Mine/Factory/Bank Limit**| Caps mines/factories/banks (used by Auto-Godzamok). Recommended: ~500 for mid-game, 800+ for late game (factories usually 50–100 less than mines). Bank fodder off by default. |
 | **Pastemode**         | Ignores efficiency and buys as many buildings as possible. Not recommended. |
 
 ## Other Automation Options
 
 | Option                | Description |
 |-----------------------|-------------|
-| **Auto Bulkbuy**      | Sets bulk buy mode after ascending (does not persist after reload). |
+| **Auto Bulkbuy**      | Sets bulk buy mode after ascending (does not persist after reload). Buys the largest affordable count up to 10/100 while keeping bank reserves. |
 | **Auto Buy All Upgrades** | Repeatedly buys all upgrades until at least one prestige level is earned. |
 | **Auto-ascend**       | Automatically ascends when reaching a set number of new HCs or when prestige doubles. |
 | **Ascending during combo** | Prevents auto-ascend during large combos (above minimum Frenzy). |
@@ -785,7 +785,7 @@ For more issues or feature requests, see the [GitHub issues page](https://github
 | **Auto-Dragon's Curve** | Swaps to Dragon's Curve aura (and optionally Reality Bending) when harvesting lumps for a higher chance of unusual lumps. |
 | **Sugar Baking Guard** | Prevents automated lump spending if it would drop your lump count below 100 (to preserve Sugar Baking bonus). |
 | **Auto-Golden Switch** | Toggles Golden Switch on for click frenzies and off afterward. |
-| **Auto-Godzamok**     | Sells mines/factories during click frenzies if Godzamok is slotted, then rebuys up to the cap. |
+| **Auto-Godzamok**     | Sells mines/factories (and banks if Bank Limit on) during click frenzies if Godzamok is slotted, then rebuys up to the cap. |
 | **Auto-Banking**      | Upgrades bank office level as soon as possible. |
 | **Auto-Broker**       | Hires stock brokers if the next Autobuy is a building and funds allow. |
 | **Auto-Loans**        | Takes loans automatically during click frenzies if certain conditions are met. |
@@ -824,6 +824,7 @@ For more issues or feature requests, see the [GitHub issues page](https://github
 | **Free Season**       | Overrides Default Season to stay in the base season (Christmas/Business Day or all seasons). |
 | **Auto-Easter Switch**| Switches to Easter during Cookie Storms if you still need eggs. |
 | **Auto-Halloween Switch** | Switches to Halloween if you still need spooky biscuits and wrinklers are present. |
+| **Season Order** | Farms seasons in fixed order (Valentine's → Easter → Halloween → Christmas → Business Day) instead of efficiency picks. |
 
 ## Bank Options
 
@@ -835,6 +836,7 @@ _All bank options add a reserve to the next Autobuy purchase, so you never drop 
 | **Harvesting bank**   | Keeps enough cookies in reserve to maximize plant harvests (e.g., Bakeberries). |
 | **Harvesting during CpS multiplier** | Increases the harvesting bank if you want to harvest during frenzies or other multipliers. |
 | **Manual minimal bank** | Stores set minutes of CpS in the bank before doing any purchase |
+| **No-GC banking** | Lucky banks are skipped when GC Clicked is 0% and Auto-GC is off (GC-less runs buy immediately). |
 
 ## Other Options
 
