@@ -1,45 +1,400 @@
-<html>
+<!doctype html>
+<html lang="en">
     <head>
-        <title>Frozen Cookies</title>
-        <link
-            href="https://github.global.ssl.fastly.net/assets/github-9afee1795ffe35383fb29abd9a59837417e36c46.css"
-            media="all"
-            rel="stylesheet"
-            type="text/css"
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta
+            name="description"
+            content="FrozenCookies — automate Cookie Clicker: efficient autobuy, bulk buying, golden cookies, spells, pantheon, and more."
         />
+        <title>FrozenCookies — Automate Cookie Clicker</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link
-            href="https://github.global.ssl.fastly.net/assets/github2-ebc981e499faa002b029a97084129b1c987eea09.css"
-            media="all"
+            href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=Russo+One&display=swap"
             rel="stylesheet"
-            type="text/css"
         />
-        <script
-            src="https://github.global.ssl.fastly.net/assets/frameworks-8a61e23841d9e5ecc084748ec552e548cd05c977.js"
-            type="text/javascript"
-        ></script>
-        <script
-            src="https://github.global.ssl.fastly.net/assets/github-f9213889d8ad7b2bef010721f415be3e61f7f69c.js"
-            type="text/javascript"
-        ></script>
+        <style>
+            :root {
+                --color-primary: #d97706;
+                --color-secondary: #f59e0b;
+                --color-accent: #7c3aed;
+                --color-bg: #1a1005;
+                --color-bg-soft: #241708;
+                --color-card: #2b1d0b;
+                --color-fg: #fff7ed;
+                --color-muted: #d6b58c;
+                --color-border: #4a2f10;
+            }
+            * {
+                box-sizing: border-box;
+            }
+            html {
+                scroll-behavior: smooth;
+            }
+            body {
+                margin: 0;
+                background: var(--color-bg);
+                color: var(--color-fg);
+                font-family: "Chakra Petch", system-ui, sans-serif;
+                font-size: 16px;
+                line-height: 1.5;
+            }
+            a {
+                color: var(--color-secondary);
+            }
+            a:focus-visible,
+            button:focus-visible {
+                outline: 3px solid var(--color-secondary);
+                outline-offset: 2px;
+            }
+            .wrap {
+                max-width: 1024px;
+                margin: 0 auto;
+                padding: 0 20px;
+            }
+            header.hero {
+                text-align: center;
+                padding: 64px 20px 40px;
+            }
+            .badge {
+                display: inline-block;
+                font-size: 14px;
+                letter-spacing: 1px;
+                text-transform: uppercase;
+                color: var(--color-secondary);
+                border: 1px solid var(--color-border);
+                border-radius: 999px;
+                padding: 4px 14px;
+                margin-bottom: 16px;
+            }
+            h1 {
+                font-family: "Russo One", sans-serif;
+                font-size: clamp(32px, 6vw, 56px);
+                margin: 0 0 12px;
+                line-height: 1.1;
+            }
+            h1 .gold {
+                color: var(--color-secondary);
+            }
+            .lede {
+                color: var(--color-muted);
+                font-size: 18px;
+                max-width: 640px;
+                margin: 0 auto 28px;
+            }
+            .cta-row {
+                display: flex;
+                gap: 12px;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+            .btn {
+                display: inline-block;
+                font-family: inherit;
+                font-weight: 700;
+                font-size: 16px;
+                border-radius: 8px;
+                padding: 12px 24px;
+                min-height: 48px;
+                cursor: pointer;
+                text-decoration: none;
+                border: 1px solid transparent;
+                transition: background 200ms, transform 200ms;
+            }
+            .btn-primary {
+                background: var(--color-accent);
+                color: #fff;
+            }
+            .btn-primary:hover {
+                background: #6d28d9;
+            }
+            .btn-ghost {
+                background: transparent;
+                color: var(--color-secondary);
+                border-color: var(--color-border);
+            }
+            .btn-ghost:hover {
+                border-color: var(--color-secondary);
+            }
+            section {
+                padding: 40px 0;
+            }
+            h2 {
+                font-family: "Russo One", sans-serif;
+                font-size: 28px;
+                margin: 0 0 20px;
+            }
+            .grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+                gap: 16px;
+            }
+            .card {
+                background: var(--color-card);
+                border: 1px solid var(--color-border);
+                border-radius: 12px;
+                padding: 20px;
+            }
+            .card svg {
+                width: 28px;
+                height: 28px;
+                stroke: var(--color-secondary);
+                fill: none;
+                stroke-width: 2;
+                stroke-linecap: round;
+                stroke-linejoin: round;
+            }
+            .card h3 {
+                margin: 12px 0 8px;
+                font-size: 18px;
+            }
+            .card p {
+                margin: 0;
+                color: var(--color-muted);
+                font-size: 15px;
+            }
+            .install-card ol {
+                margin: 0 0 12px;
+                padding-left: 22px;
+                color: var(--color-muted);
+            }
+            .install-card ol li {
+                margin-bottom: 6px;
+            }
+            pre {
+                background: #120b03;
+                border: 1px solid var(--color-border);
+                border-radius: 8px;
+                padding: 12px 14px;
+                overflow-x: auto;
+                font-size: 13px;
+                color: #fde68a;
+            }
+            .copy-btn {
+                font-family: inherit;
+                font-size: 14px;
+                font-weight: 600;
+                background: var(--color-primary);
+                color: #000;
+                border: none;
+                border-radius: 6px;
+                padding: 8px 16px;
+                min-height: 44px;
+                cursor: pointer;
+                transition: background 200ms;
+            }
+            .copy-btn:hover {
+                background: var(--color-secondary);
+            }
+            footer {
+                border-top: 1px solid var(--color-border);
+                padding: 24px 0 40px;
+                color: var(--color-muted);
+                font-size: 14px;
+                text-align: center;
+            }
+            @media (prefers-reduced-motion: reduce) {
+                html {
+                    scroll-behavior: auto;
+                }
+                .btn,
+                .copy-btn {
+                    transition: none;
+                }
+            }
+        </style>
     </head>
-
     <body>
-        <div class="markdown-body entry-content" itemprop="mainContentOfPage">
-            <h1>
-                <a name="frozencookies" class="anchor" href="#frozencookies"
-                    ><span class="octicon octicon-link"></span></a
-                >FrozenCookies
-            </h1>
-
-            <p>An automated Cookie Clicker tool.</p>
-
-            <p>
-                Go to
-                <a href="https://github.com/erbkaiser/FrozenCookies#readme"
-                    >the Github readme</a
-                >
-                for info.
+        <header class="hero wrap">
+            <span class="badge">Cookie Clicker mod</span>
+            <h1>Frozen<span class="gold">Cookies</span></h1>
+            <p class="lede">
+                Automate Cookie Clicker: efficient autobuy with real bulk
+                buying, golden cookies, spells, pantheon, seasons, and banks —
+                all computed for you.
             </p>
-        </div>
+            <div class="cta-row">
+                <a class="btn btn-primary" href="#install">Install now</a>
+                <a
+                    class="btn btn-ghost"
+                    href="https://github.com/darkred1145/FrozenCookies"
+                    >View source</a
+                >
+            </div>
+        </header>
+
+        <main class="wrap">
+            <section aria-labelledby="features">
+                <h2 id="features">What it does</h2>
+                <div class="grid">
+                    <div class="card">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path
+                                d="M3 3v18h18M7 15l4-6 4 3 5-8"
+                            />
+                        </svg>
+                        <h3>Efficient autobuy</h3>
+                        <p>
+                            Ranks buildings and upgrades by CpS efficiency and
+                            buys the best next purchase automatically.
+                        </p>
+                    </div>
+                    <div class="card">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path
+                                d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8"
+                            />
+                        </svg>
+                        <h3>Real bulk buying</h3>
+                        <p>
+                            Buys the largest affordable count up to 10/100
+                            while keeping bank reserves — not one by one.
+                        </p>
+                    </div>
+                    <div class="card">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <circle cx="12" cy="12" r="9" />
+                            <path d="M12 7v5l3 3" />
+                        </svg>
+                        <h3>Golden cookies &amp; timers</h3>
+                        <p>
+                            Auto-clicks golden cookies, reindeer, and fortunes.
+                            Spawn timers never vanish, even when overdue.
+                        </p>
+                    </div>
+                    <div class="card">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path
+                                d="M12 2l2.4 6.9H21l-5.3 4.2 2 7.1-5.7-4.5-5.7 4.5 2-7.1L3 8.9h6.6z"
+                            />
+                        </svg>
+                        <h3>Spells &amp; combos</h3>
+                        <p>
+                            Auto-casts grimoire spells, double-cast FTHOF
+                            combos, and respects your wizard tower mana cap.
+                        </p>
+                    </div>
+                    <div class="card">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M3 21h18M5 21V10l7-6 7 6v11" />
+                        </svg>
+                        <h3>Pantheon &amp; dragon</h3>
+                        <p>
+                            Auto-slots gods, swaps Cyclius, upgrades and pets
+                            the dragon, sets auras.
+                        </p>
+                    </div>
+                    <div class="card">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <rect x="3" y="7" width="18" height="13" rx="2" />
+                            <path d="M3 10h18M7 15h4" />
+                        </svg>
+                        <h3>Banks &amp; seasons</h3>
+                        <p>
+                            Lucky, harvest, and manual banks. Season farming in
+                            fixed order or by efficiency.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="install" aria-labelledby="install-h">
+                <h2 id="install-h">Install</h2>
+                <div class="grid">
+                    <div class="card install-card">
+                        <h3>Web (console)</h3>
+                        <ol>
+                            <li>Open Cookie Clicker.</li>
+                            <li>Press F12, go to Console.</li>
+                            <li>Paste and run:</li>
+                        </ol>
+                        <pre id="snippet-web">Game.LoadMod("https://darkred1145.github.io/FrozenCookies/frozen_cookies.js");</pre>
+                        <button
+                            class="copy-btn"
+                            data-copy="snippet-web"
+                            type="button"
+                        >
+                            Copy
+                        </button>
+                    </div>
+                    <div class="card install-card">
+                        <h3>Steam Workshop</h3>
+                        <ol>
+                            <li>Subscribe to Frozen Cookies.</li>
+                            <li>Restart Cookie Clicker.</li>
+                            <li>Enable it under Options → Manage mods.</li>
+                        </ol>
+                        <p>
+                            Steam manual install: copy the
+                            <code>Steam/FrozenCookies</code> folder into
+                            <code>mods/local</code>.
+                        </p>
+                    </div>
+                    <div class="card install-card">
+                        <h3>Tampermonkey</h3>
+                        <ol>
+                            <li>Create a userscript for the game URL.</li>
+                            <li>Load the mod URL below on Game.ready.</li>
+                        </ol>
+                        <pre id="snippet-tm">https://darkred1145.github.io/FrozenCookies/frozen_cookies.js</pre>
+                        <button
+                            class="copy-btn"
+                            data-copy="snippet-tm"
+                            type="button"
+                        >
+                            Copy
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <div class="wrap">
+                <p>
+                    Fork of
+                    <a href="https://github.com/erbkaiser/FrozenCookies"
+                        >erbkaiser/FrozenCookies</a
+                    >. Full options documented in the
+                    <a
+                        href="https://github.com/darkred1145/FrozenCookies#readme"
+                        >README</a
+                    >.
+                </p>
+            </div>
+        </footer>
+
+        <script>
+            document.querySelectorAll("[data-copy]").forEach(function (btn) {
+                btn.addEventListener("click", function () {
+                    var el = document.getElementById(
+                        btn.getAttribute("data-copy")
+                    );
+                    var done = function () {
+                        btn.textContent = "Copied";
+                        setTimeout(function () {
+                            btn.textContent = "Copy";
+                        }, 1500);
+                    };
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard
+                            .writeText(el.textContent)
+                            .then(done, done);
+                    } else {
+                        var r = document.createRange();
+                        r.selectNodeContents(el);
+                        var s = window.getSelection();
+                        s.removeAllRanges();
+                        s.addRange(r);
+                        try {
+                            document.execCommand("copy");
+                        } catch (e) {}
+                        s.removeAllRanges();
+                        done();
+                    }
+                });
+            });
+        </script>
     </body>
 </html>
