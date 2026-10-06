@@ -1541,7 +1541,21 @@ function autoGardenAction() {
             : gardenPlantKeys[FrozenCookies.setHarvestBankPlant];
     if (!plantKey) return;
     var plant = G.plants[plantKey];
-    if (!plant || plant.unlocked === 0 || plant.plantable === false) return;
+    if (!plant || plant.plantable === false) return;
+    if (plant.unlocked === 0) {
+        if (!autoGardenAction.warned) {
+            autoGardenAction.warned = {};
+        }
+        if (!autoGardenAction.warned[plantKey]) {
+            autoGardenAction.warned[plantKey] = 1;
+            logEvent(
+                "AutoGarden",
+                plant.name +
+                    " seed not unlocked yet. SMART idle until you unlock it."
+            );
+        }
+        return;
+    }
     var delay = delayAmount();
     var harvested = 0;
     for (var y = 0; y < 6; y++) {
