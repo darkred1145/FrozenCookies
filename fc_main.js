@@ -1502,41 +1502,79 @@ var gardenPlantKeys = [
     "doughshroom",
 ];
 
+function gardenGoalPlant() {
+    // SMART goal from live garden formulas:
+    // - No burst plant picked: whiskerbloom field for the milk/CpS bonus.
+    // - Burst plant picked: use it, but step down to bakeberry when the bank
+    //   can't fill the bigger cap (queenbeet 4%, duketater 8% of bank).
+    //   Never queenbeet for CpS (it drains -2% while growing).
+    if (!FrozenCookies.setHarvestBankPlant) return "whiskerbloom";
+    var plantKey = gardenPlantKeys[FrozenCookies.setHarvestBankPlant];
+    if (plantKey === "queenbeet" || plantKey === "duketater") {
+        var needPercent = plantKey === "duketater" ? 0.08 : 0.04;
+        var minutes = plantKey === "duketater" ? 120 : 60;
+        if (Game.cookies < baseCps() * 60 * minutes / needPercent) {
+            return "bakeberry";
+        }
+    }
+    if (plantKey === "crumbspore" || plantKey === "doughshroom") {
+        return "bakeberry";
+    }
+    return plantKey;
+}
+
 function autoGardenAction() {
     if (!G || !FrozenCookies.autoGarden) return;
     if (G.freeze) return;
-    var plantKey = gardenPlantKeys[FrozenCookies.setHarvestBankPlant];
+    var plantKey =
+        FrozenCookies.autoGarden == 3
+            ? gardenGoalPlant()
+            : gardenPlantKeys[FrozenCookies.setHarvestBankPlant];
     if (!plantKey) return;
     var plant = G.plants[plantKey];
-    if (!plant || !plant.plantable) return;
+    if (!plant || plant.unlocked === 0 || plant.plantable === false) return;
     var delay = delayAmount();
+    var harvested = 0;
     for (var y = 0; y < 6; y++) {
         for (var x = 0; x < 6; x++) {
-            if (!G.isTileUnlocked || G.isTileUnlocked(x, y)) {
-                var tile = G.plot[y] && G.plot[y][x];
-                if (!tile || tile[0] < 1) continue;
-                var growing = G.plantsById[tile[0] - 1];
-                if (!growing || growing.key !== plantKey) continue;
-                if (tile[1] < growing.mature) continue;
-                if (Game.cookies < delay) continue;
-                G.harvest(x, y);
-                FrozenCookies.autobuyCount += 1;
-                if (FrozenCookies.autoGarden == 2 && G.canPlant(plant)) {
+            if (G.isTileUnlocked && !G.isTileUnlocked(x, y)) continue;
+            var tile = G.plot[y] && G.plot[y][x];
+            if (!tile) continue;
+            if (tile[0] < 1) {
+                // SMART fills empty unlocked tiles with the goal plant.
+                if (
+                    FrozenCookies.autoGarden == 3 &&
+                    Game.cookies >= delay &&
+                    G.canPlant(plant)
+                ) {
                     G.seedSelected = plant.id;
                     G.clickTile(x, y);
+                    harvested += 1;
                 }
-                logEvent(
-                    "AutoGarden",
-                    "Harvested mature " +
-                        plant.name +
-                        " at (" +
-                        x +
-                        "," +
-                        y +
-                        ")"
-                );
+                continue;
+            }
+            var growing = G.plantsById[tile[0] - 1];
+            if (!growing || growing.key !== plantKey) continue;
+            if (tile[1] < growing.mature) continue;
+            if (Game.cookies < delay) continue;
+            G.harvest(x, y);
+            harvested += 1;
+            FrozenCookies.autobuyCount += 1;
+            if (
+                (FrozenCookies.autoGarden == 2 ||
+                    FrozenCookies.autoGarden == 3) &&
+                G.canPlant(plant)
+            ) {
+                G.seedSelected = plant.id;
+                G.clickTile(x, y);
             }
         }
+    }
+    if (harvested > 0) {
+        logEvent(
+            "AutoGarden",
+            "Tended " + harvested + "x " + plant.name + " tiles"
+        );
     }
 }
 
