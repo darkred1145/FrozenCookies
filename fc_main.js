@@ -1503,11 +1503,15 @@ var gardenPlantKeys = [
 ];
 
 function gardenGoalPlant() {
-    // SMART goal from live garden formulas:
+    // SMART goal from live garden formulas + community practice:
+    // - Combo play (auto-GC on): golden clover field for spawn frequency.
     // - No burst plant picked: whiskerbloom field for the milk/CpS bonus.
     // - Burst plant picked: use it, but step down to bakeberry when the bank
     //   can't fill the bigger cap (queenbeet 4%, duketater 8% of bank).
     //   Never queenbeet for CpS (it drains -2% while growing).
+    if (FrozenCookies.autoGC && G && G.plants["goldenClover"] && G.plants["goldenClover"].unlocked) {
+        return "goldenClover";
+    }
     if (!FrozenCookies.setHarvestBankPlant) return "whiskerbloom";
     var plantKey = gardenPlantKeys[FrozenCookies.setHarvestBankPlant];
     if (plantKey === "queenbeet" || plantKey === "duketater") {
@@ -1521,6 +1525,11 @@ function gardenGoalPlant() {
         return "bakeberry";
     }
     return plantKey;
+}
+
+// Weeds/fungi that spread and wreck fields. Harvested young on sight.
+function isGardenWeed(plant) {
+    return !!plant && (plant.weed || plant.fungus);
 }
 
 function autoGardenAction() {
@@ -1554,7 +1563,18 @@ function autoGardenAction() {
                 continue;
             }
             var growing = G.plantsById[tile[0] - 1];
-            if (!growing || growing.key !== plantKey) continue;
+            if (!growing) continue;
+            // SMART weeds young growths that would contaminate the field.
+            if (
+                FrozenCookies.autoGarden == 3 &&
+                isGardenWeed(growing) &&
+                growing.key !== plantKey
+            ) {
+                G.harvest(x, y);
+                harvested += 1;
+                continue;
+            }
+            if (growing.key !== plantKey) continue;
             if (tile[1] < growing.mature) continue;
             if (Game.cookies < delay) continue;
             G.harvest(x, y);
