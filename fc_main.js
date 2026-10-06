@@ -4047,7 +4047,10 @@ function FCStart() {
         );
     }
 
-    if (FrozenCookies.autoGarden && FrozenCookies.setHarvestBankPlant) {
+    if (
+        FrozenCookies.autoGarden &&
+        (FrozenCookies.setHarvestBankPlant || FrozenCookies.autoGarden == 4)
+    ) {
         FrozenCookies.autoGardenBot = setInterval(
             autoGardenAction,
             FrozenCookies.frequency * 50
