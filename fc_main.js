@@ -1530,8 +1530,21 @@ function gardenNextUnlock() {
 
 // Checkerboard parents across unlocked tiles, leaving every other tile
 // empty as mutation beds. Mature parents stay; young weeds cleared.
+// Wood chips soil (3x mutation loops) while unlocking; needs 300 farms.
 function gardenUnlockAction() {
     if (!G || G.freeze) return 0;
+    if (
+        G.soils &&
+        G.soils.woodchips &&
+        G.soil !== G.soils.woodchips.id &&
+        !(G.nextSoil > Date.now()) &&
+        Game.Objects["Farm"].amount >= G.soils.woodchips.req
+    ) {
+        G.nextSoil = Date.now() + (Game.Has("Turbo-charged soil") ? 1 : 1000 * 60 * 10);
+        G.soil = G.soils.woodchips.id;
+        if (typeof G.computeStepT === "function") G.computeStepT();
+        logEvent("AutoGarden", "Switched soil to wood chips for mutations");
+    }
     var step = gardenNextUnlock();
     if (!step) return -1;
     var tended = 0;
