@@ -1490,6 +1490,97 @@ function chainBank() {
     //  return baseCps() * 60 * 60 * 6 * 4;
 }
 
+// Mutation recipes from live minigameGarden.js getMuts(): parents that must
+// be MATURE adjacent to an empty tile, with per-tick odds. Ordered as an
+// unlock chain: each step's parents come from earlier steps or starters.
+var gardenMutations = [
+    { target: "thumbcorn", parents: ["bakerWheat", "bakerWheat"] },
+    { target: "bakeberry", parents: ["bakerWheat", "bakerWheat"] },
+    { target: "cronerice", parents: ["bakerWheat", "thumbcorn"] },
+    { target: "brownMold", parents: ["whiteMildew", "whiteMildew"] },
+    { target: "whiteMildew", parents: ["brownMold", "brownMold"] },
+    { target: "chocoroot", parents: ["bakerWheat", "brownMold"] },
+    { target: "whiteChocoroot", parents: ["chocoroot", "whiteMildew"] },
+    { target: "gildmillet", parents: ["thumbcorn", "cronerice"] },
+    { target: "clover", parents: ["bakerWheat", "gildmillet"] },
+    { target: "goldenClover", parents: ["bakerWheat", "gildmillet"] },
+    { target: "shimmerlily", parents: ["clover", "gildmillet"] },
+    { target: "whiskerbloom", parents: ["shimmerlily", "whiteChocoroot"] },
+    { target: "queenbeet", parents: ["chocoroot", "bakeberry"] },
+    { target: "duketater", parents: ["queenbeet", "queenbeet"] },
+];
+
+// Next locked seed on the chain whose parents are both unlocked.
+// Returns {target, parents} or null when the chain is done.
+function gardenNextUnlock() {
+    if (!G) return null;
+    for (var i = 0; i < gardenMutations.length; i++) {
+        var step = gardenMutations[i];
+        var target = G.plants[step.target];
+        if (!target || target.unlocked) continue;
+        var p0 = G.plants[step.parents[0]];
+        var p1 = G.plants[step.parents[1]];
+        if (!p0 || !p1) continue;
+        if (!p0.unlocked || !p1.unlocked) continue;
+        if (p0.plantable === false || p1.plantable === false) continue;
+        return step;
+    }
+    return null;
+}
+
+// Checkerboard parents across unlocked tiles, leaving every other tile
+// empty as mutation beds. Mature parents stay; young weeds cleared.
+function gardenUnlockAction() {
+    if (!G || G.freeze) return 0;
+    var step = gardenNextUnlock();
+    if (!step) return -1;
+    var tended = 0;
+    for (var y = 0; y < 6; y++) {
+        for (var x = 0; x < 6; x++) {
+            if (G.isTileUnlocked && !G.isTileUnlocked(x, y)) continue;
+            var tile = G.plot[y] && G.plot[y][x];
+            if (!tile) continue;
+            var wantParent = (x + y) % 2 === 0;
+            if (tile[0] < 1) {
+                if (!wantParent) continue;
+                var parentKey = step.parents[(x + y) % 4 < 2 ? 0 : 1];
+                var parent = G.plants[parentKey];
+                if (parent && G.canPlant(parent)) {
+                    G.seedSelected = parent.id;
+                    G.clickTile(x, y);
+                    tended += 1;
+                }
+                continue;
+            }
+            var growing = G.plantsById[tile[0] - 1];
+            if (!growing) continue;
+            // Found the target: harvest mature to bank the seed, keep one.
+            if (growing.key === step.target) {
+                if (tile[1] >= growing.mature) {
+                    G.harvest(x, y);
+                    tended += 1;
+                    logEvent(
+                        "AutoGarden",
+                        "Unlocked " + growing.name + " (harvested)"
+                    );
+                }
+                continue;
+            }
+            if (isGardenWeed(growing)) {
+                G.harvest(x, y);
+                tended += 1;
+                continue;
+            }
+            // Wrong plant on a parent tile: clear for replant.
+            if (wantParent && step.parents.indexOf(growing.key) < 0) {
+                G.harvest(x, y);
+                tended += 1;
+            }
+        }
+    }
+    return tended;
+}
+
 // Garden plant keys matching harvestBank's setHarvestBankPlant order.
 var gardenPlantKeys = [
     null,
@@ -1535,6 +1626,27 @@ function isGardenWeed(plant) {
 function autoGardenAction() {
     if (!G || !FrozenCookies.autoGarden) return;
     if (G.freeze) return;
+    if (FrozenCookies.autoGarden == 4) {
+        var unlockTended = gardenUnlockAction();
+        if (unlockTended === -1) {
+            if (!autoGardenAction.unlockDone) {
+                autoGardenAction.unlockDone = 1;
+                logEvent(
+                    "AutoGarden",
+                    "Unlock chain complete. Switch to SMART for income."
+                );
+            }
+        } else {
+            autoGardenAction.unlockDone = 0;
+            if (unlockTended > 0) {
+                logEvent(
+                    "AutoGarden",
+                    "Unlock tending " + unlockTended + " tiles"
+                );
+            }
+        }
+        return;
+    }
     var plantKey =
         FrozenCookies.autoGarden == 3
             ? gardenGoalPlant()
