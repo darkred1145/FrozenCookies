@@ -782,7 +782,7 @@ For more issues or feature requests, see the [GitHub issues page](https://github
 | **Autopop Wrinklers** | Pops wrinklers automatically, except during Halloween/Easter if you still need event drops. |
 | **Save Shiny Wrinklers** | Protects shiny wrinklers from being popped and prevents ending the Grandmapocalypse. |
 | **Autoharvest Sugar Lump** | Harvests ripe sugar lumps automatically, with optional Rigidel swap for early harvest. |
-| **Auto Garden**       | Harvests and replants garden plants. HARVEST takes ripe plants, HARVEST + REPLANT plants them again, SMART picks the plant (golden clover when Auto-GC is on, whiskerbloom otherwise, or your harvesting bank plant while the bank can pay for it). UNLOCK runs a checkerboard of parent plants to mutate locked seeds, clearing weeds and switching to wood chips soil for better odds. |
+| **Auto Garden**       | Harvests and replants garden plants. HARVEST takes ripe plants, HARVEST + REPLANT plants them again, SMART picks the plant (golden clover when Auto-GC is on, whiskerbloom otherwise, or your harvesting bank plant while the bank can pay for it). UNLOCK walks the mutation chain to unlock missing seeds: it keeps a checkerboard of parent plants, harvests any ripe locked seed it finds, clears the rest, and switches to wood chips soil for better odds. |
 | **Auto-Dragon's Curve** | Swaps to Dragon's Curve aura (and optionally Reality Bending) when harvesting lumps for a higher chance of unusual lumps. |
 | **Sugar Baking Guard** | Prevents automated lump spending if it would drop your lump count below 100 (to preserve Sugar Baking bonus). |
 | **Auto-Golden Switch** | Toggles Golden Switch on for click frenzies and off afterward. |

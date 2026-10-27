@@ -1490,22 +1490,31 @@ function chainBank() {
     //  return baseCps() * 60 * 60 * 6 * 4;
 }
 
-// Mutation recipes from live minigameGarden.js getMuts(): parents that must
-// be MATURE adjacent to an empty tile, with per-tick odds. Ordered as an
-// unlock chain: each step's parents come from earlier steps or starters.
+// Mutation recipes from live minigameGarden.js getMuts(), ordered so every
+// step's parents come from an earlier step or a starting seed. A repeated key
+// means the recipe wants two of that plant next to the same empty tile.
+// Spreading fungus seeds (crumbspore, doughshroom) are left out: their recipes
+// cap how many neighbours may exist, which a checkerboard cannot respect.
 var gardenMutations = [
     { target: "thumbcorn", parents: ["bakerWheat", "bakerWheat"] },
     { target: "bakeberry", parents: ["bakerWheat", "bakerWheat"] },
     { target: "cronerice", parents: ["bakerWheat", "thumbcorn"] },
-    { target: "brownMold", parents: ["whiteMildew", "whiteMildew"] },
-    { target: "whiteMildew", parents: ["brownMold", "brownMold"] },
-    { target: "chocoroot", parents: ["bakerWheat", "brownMold"] },
-    { target: "whiteChocoroot", parents: ["chocoroot", "whiteMildew"] },
-    { target: "gildmillet", parents: ["thumbcorn", "cronerice"] },
+    { target: "gildmillet", parents: ["cronerice", "thumbcorn"] },
     { target: "clover", parents: ["bakerWheat", "gildmillet"] },
     { target: "goldenClover", parents: ["bakerWheat", "gildmillet"] },
     { target: "shimmerlily", parents: ["clover", "gildmillet"] },
+    { target: "chocoroot", parents: ["bakerWheat", "brownMold"] },
+    { target: "whiteChocoroot", parents: ["chocoroot", "whiteMildew"] },
+    { target: "greenRot", parents: ["whiteMildew", "clover"] },
+    { target: "keenmoss", parents: ["greenRot", "brownMold"] },
+    { target: "wardlichen", parents: ["cronerice", "keenmoss"] },
+    { target: "drowsyfern", parents: ["chocoroot", "keenmoss"] },
+    { target: "tidygrass", parents: ["bakerWheat", "whiteChocoroot"] },
     { target: "whiskerbloom", parents: ["shimmerlily", "whiteChocoroot"] },
+    { target: "chimerose", parents: ["shimmerlily", "whiskerbloom"] },
+    { target: "nursetulip", parents: ["whiskerbloom", "whiskerbloom"] },
+    { target: "elderwort", parents: ["shimmerlily", "cronerice"] },
+    { target: "everdaisy", parents: ["tidygrass", "elderwort"] },
     { target: "queenbeet", parents: ["chocoroot", "bakeberry"] },
     { target: "duketater", parents: ["queenbeet", "queenbeet"] },
 ];
@@ -1528,9 +1537,15 @@ function gardenNextUnlock() {
     return null;
 }
 
-// Checkerboard parents across unlocked tiles, leaving every other tile
-// empty as mutation beds. Mature parents stay; young weeds cleared.
-// Wood chips soil (3x mutation loops) while unlocking; needs 300 farms.
+// Seed the player does not own yet, so a ripe plant of it is worth harvesting.
+function gardenSeedLocked(plant) {
+    var def = plant && G.plants[plant.key];
+    return !!def && !def.unlocked;
+}
+
+// Checkerboard parents with empty beds between them, wood chips soil for the
+// extra mutation rolls. Mature locked seeds are harvested to bank the unlock,
+// current parents stay put, everything else is cleared to free the beds.
 function gardenUnlockAction() {
     if (!G || G.freeze) return 0;
     if (
@@ -1556,39 +1571,26 @@ function gardenUnlockAction() {
             var wantParent = (x + y) % 2 === 0;
             if (tile[0] < 1) {
                 if (!wantParent) continue;
-                var parentKey = step.parents[(x + y) % 4 < 2 ? 0 : 1];
-                var parent = G.plants[parentKey];
-                if (parent && G.canPlant(parent)) {
-                    G.seedSelected = parent.id;
-                    G.clickTile(x, y);
-                    tended += 1;
-                }
+                var parent = G.plants[step.parents[(x + y) % 4 < 2 ? 0 : 1]];
+                if (!parent || parent.plantable === false || !G.canPlant(parent)) continue;
+                G.seedSelected = parent.id;
+                G.clickTile(x, y);
+                if (G.plot[y][x][0] !== parent.id + 1) continue;
+                tended += 1;
                 continue;
             }
             var growing = G.plantsById[tile[0] - 1];
             if (!growing) continue;
-            // Found the target: harvest mature to bank the seed, keep one.
-            if (growing.key === step.target) {
-                if (tile[1] >= growing.mature) {
-                    G.harvest(x, y);
-                    tended += 1;
-                    logEvent(
-                        "AutoGarden",
-                        "Unlocked " + growing.name + " (harvested)"
-                    );
-                }
-                continue;
-            }
-            if (isGardenWeed(growing)) {
+            if (gardenSeedLocked(growing)) {
+                if (tile[1] < growing.mature) continue;
                 G.harvest(x, y);
                 tended += 1;
+                logEvent("AutoGarden", "Unlocked " + growing.name);
                 continue;
             }
-            // Wrong plant on a parent tile: clear for replant.
-            if (wantParent && step.parents.indexOf(growing.key) < 0) {
-                G.harvest(x, y);
-                tended += 1;
-            }
+            if (wantParent && step.parents.indexOf(growing.key) >= 0) continue;
+            G.harvest(x, y);
+            tended += 1;
         }
     }
     return tended;
@@ -4065,6 +4067,7 @@ function FCStart() {
         FrozenCookies.autoGarden &&
         (FrozenCookies.setHarvestBankPlant || FrozenCookies.autoGarden == 4)
     ) {
+        autoGardenAction.unlockDone = 0;
         FrozenCookies.autoGardenBot = setInterval(
             autoGardenAction,
             FrozenCookies.frequency * 50
