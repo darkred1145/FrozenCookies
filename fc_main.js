@@ -3229,7 +3229,8 @@ function shouldDropBulkForLimits(building) {
 }
 
 function affordableBulkCount(building, maxBulk, spendable) {
-    // ponytail: bulk size from affordability only; upgrade when recommendation engine becomes bulk-aware (efficiency/cost for N).
+    // Bulk size comes from affordability only; the recommendation engine is
+    // not bulk-aware yet (no efficiency per N).
     if (!building || maxBulk <= 0) return 0;
     var remaining = bulkLimitRemaining(building);
     if (remaining <= 0) return 0;

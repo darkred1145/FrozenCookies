@@ -1135,7 +1135,7 @@ function autoFTHOFComboAction() {    if (!M) return;
             M.computeMagicM(); //Recalc max after selling
             M.castSpell(M.spellsById[1]);
             logEvent("autoFTHOFCombo", "Double cast Force the Hand of Fate");
-            // ponytail: rebuy restores pre-sell tower count; only path that
+            // Rebuy restores the pre-sell tower count; the only path that
             // grows past the mana cap is SugarLevel 10 + towerLimit + count<=497,
             // capped at the affordable count for manaMax.
             var rebuyTowers = autoFTHOFComboAction.count;
