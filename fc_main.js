@@ -1543,6 +1543,27 @@ function gardenSeedLocked(plant) {
     return !!def && !def.unlocked;
 }
 
+// Change the field soil when the cooldown and the farm count allow it.
+function gardenUseSoil(soil) {
+    if (!G || !G.soils || !soil || G.soil === soil.id) return false;
+    if (G.nextSoil > Date.now()) return false;
+    if (Game.Objects["Farm"].amount < soil.req) return false;
+    G.nextSoil = Date.now() + (Game.Has("Turbo-charged soil") ? 1 : 1000 * 60 * 10);
+    G.soil = soil.id;
+    if (typeof G.computeStepT === "function") G.computeStepT();
+    return true;
+}
+
+// Put back the soil that was active before UNLOCK switched to wood chips.
+function gardenRestoreSoil() {
+    var prev = gardenUnlockAction.prevSoil;
+    if (prev === null || prev === undefined) return;
+    var soil = G && G.soilsById && G.soilsById[prev];
+    if (!soil || !gardenUseSoil(soil)) return;
+    gardenUnlockAction.prevSoil = null;
+    logEvent("AutoGarden", "Soil back to " + soil.name);
+}
+
 // Checkerboard parents with empty beds between them, wood chips soil for the
 // extra mutation rolls. Mature locked seeds are harvested to bank the unlock,
 // current parents stay put, everything else is cleared to free the beds.
@@ -1552,16 +1573,18 @@ function gardenUnlockAction() {
         G.soils &&
         G.soils.woodchips &&
         G.soil !== G.soils.woodchips.id &&
-        !(G.nextSoil > Date.now()) &&
-        Game.Objects["Farm"].amount >= G.soils.woodchips.req
+        gardenUnlockAction.prevSoil === undefined
     ) {
-        G.nextSoil = Date.now() + (Game.Has("Turbo-charged soil") ? 1 : 1000 * 60 * 10);
-        G.soil = G.soils.woodchips.id;
-        if (typeof G.computeStepT === "function") G.computeStepT();
+        gardenUnlockAction.prevSoil = G.soil;
+    }
+    if (G.soils && G.soils.woodchips && gardenUseSoil(G.soils.woodchips)) {
         logEvent("AutoGarden", "Switched soil to wood chips for mutations");
     }
     var step = gardenNextUnlock();
-    if (!step) return -1;
+    if (!step) {
+        gardenRestoreSoil();
+        return -1;
+    }
     var tended = 0;
     for (var y = 0; y < 6; y++) {
         for (var x = 0; x < 6; x++) {
@@ -1641,6 +1664,7 @@ function isGardenWeed(plant) {
 function autoGardenAction() {
     if (!G || !FrozenCookies.autoGarden) return;
     if (G.freeze) return;
+    if (FrozenCookies.autoGarden != 4) gardenRestoreSoil();
     if (FrozenCookies.autoGarden == 4) {
         var unlockTended = gardenUnlockAction();
         if (unlockTended === -1) {
@@ -3868,6 +3892,7 @@ function FCStart() {
     if (FrozenCookies.autoGardenBot) {
         clearInterval(FrozenCookies.autoGardenBot);
         FrozenCookies.autoGardenBot = 0;
+        gardenRestoreSoil();
     }
 
     if (FrozenCookies.autoCycliusBot) {
