@@ -1,9 +1,9 @@
 ![A single round cookie with a soft, slightly crumbly texture, topped with blue candy pieces and silver sprinkles. The cookie rests on a bed of shredded coconut, creating a wintry, festive atmosphere. No text is present. The overall tone alludes to winter, a frozen atmosphere.](https://user-images.githubusercontent.com/6014923/165900996-4726d38f-3c7c-4932-8d2e-f98bed93a836.png)
 
 ![Version](https://img.shields.io/badge/version-2.052.8-blue)
-![License](https://img.shields.io/github/license/erbkaiser/FrozenCookies)
-[![GitHub issues](https://img.shields.io/github/issues/erbkaiser/FrozenCookies?label=issues)](https://github.com/erbkaiser/FrozenCookies/issues)
-[![Last commit](https://img.shields.io/github/last-commit/erbkaiser/FrozenCookies?label=last%20commit)](https://github.com/erbkaiser/FrozenCookies/commits/main)
+![License](https://img.shields.io/github/license/darkred1145/FrozenCookies)
+[![GitHub issues](https://img.shields.io/github/issues/darkred1145/FrozenCookies?label=issues)](https://github.com/darkred1145/FrozenCookies/issues)
+[![Last commit](https://img.shields.io/github/last-commit/darkred1145/FrozenCookies?label=last%20commit)](https://github.com/darkred1145/FrozenCookies/commits/main)
 
 > ⚠️ **WARNING:**  
 > **Auto Sweet** and **Auto Cast 100% Consistency Combo** are _experimental_ features.  
@@ -16,9 +16,11 @@ An automated Cookie Clicker tool.
 
 ## Quick Start
 
--   **Steam:** Subscribe on [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=2816199538)
+-   **Steam:** Manual install from this repo, see 'How to use' below. The
+    [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=2816199538)
+    item is upstream and does not include this fork's changes.
 -   **Web:** Paste this in the console:  
-    `Game.LoadMod("https://github.erbkaiser.com/FrozenCookies/frozen_cookies.js");`
+    `Game.LoadMod("https://darkred1145.github.io/FrozenCookies/frozen_cookies.js");`
 -   **Bookmarklet/Userscript:** See 'How to use' below for details.
 
 ## Table of Contents
@@ -52,12 +54,12 @@ Click the button to open the FrozenCookies menu, where you can configure setting
 
 ### Steam
 
--   **Workshop: (Recommended)**  
+-   **Workshop:** upstream item. Subscribing gets the upstream mod, not this fork.  
     1.  Subscribe at [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=2816199538).
     2.  Restart or refresh Cookie Clicker.
     3.  Enable Frozen Cookies in 'Manage mods' under Options.
 -   **Manual Install:**
-    1.  Download the Steam folder from [here](https://erbkaiser.github.io/FrozenCookies/Steam/).
+    1.  Download the Steam folder from [here](https://github.com/darkred1145/FrozenCookies/tree/main/Steam/FrozenCookies).
     2.  Place the `FrozenCookies` folder into your `mods/local` directory.
     3.  Remove or disable any other FrozenCookies variants.
     4.  Restart or refresh Cookie Clicker.
@@ -69,26 +71,24 @@ Click the button to open the FrozenCookies menu, where you can configure setting
 2. Go to the Console tab.
 3. Paste and run:
     ```js
-    Game.LoadMod("https://github.erbkaiser.com/FrozenCookies/frozen_cookies.js");
+    Game.LoadMod("https://darkred1145.github.io/FrozenCookies/frozen_cookies.js");
     ```
 4. You should see a confirmation message in the console.
 5. You might need to enable pasting in the browser console first, it will tell you if that is the case
-6. Some net nanny programs may block my website. In that case, try to load from
-   **Game.LoadMod("https://erbkaiser.github.io/FrozenCookies/frozen_cookies.js");**. If
-   that also fails, contact your internet administrator and ask them to unblock
-   github.erbkaiser.com
+6. If the github.io address is blocked on your network, mirror `frozen_cookies.js` and the
+   files it loads somewhere reachable and point `Game.LoadMod` at your copy.
 
 ### Bookmarklet
 
 1. Copy the **contents** (not the URL) of
-   [fc_bookmarklet_loader.js](https://github.erbkaiser.com/FrozenCookies/fc_bookmarklet_loader.js).
+   [fc_bookmarklet_loader.js](https://darkred1145.github.io/FrozenCookies/fc_bookmarklet_loader.js).
 2. Create a new bookmark and paste the code as its URL.
 3. Open Cookie Clicker and click the bookmark.
 
 ### Userscript
 
 1. Install [Tampermonkey for Chrome](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo?hl=en) or [Tampermonkey for Firefox](https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/).
-2. Visit [fc_userscript_loader.user.js](https://github.erbkaiser.com/FrozenCookies/fc_userscript_loader.user.js).
+2. Visit [fc_userscript_loader.user.js](https://darkred1145.github.io/FrozenCookies/fc_userscript_loader.user.js).
 3. Click 'Install' in the upper right.
 4. Open Cookie Clicker.
 
@@ -746,7 +746,7 @@ been changed. Existing settings should transfer 1:1.
 -   **Lag:** Frozen Cookies can cause noticeable lag due to its complexity. Lower the auto-click speed if performance drops.
 -   **Golden Cookie timers:** Occasionally, Golden Cookie timers may disappear from the infobox. They will reappear with the next Golden Cookie spawn.
 
-For more issues or feature requests, see the [GitHub issues page](https://github.com/erbkaiser/FrozenCookies/issues). Contributions and suggestions are welcome!
+For more issues or feature requests, see the [GitHub issues page](https://github.com/darkred1145/FrozenCookies/issues). Contributions and suggestions are welcome!
 
 # What do these options actually do, in detail?
 
@@ -782,6 +782,7 @@ For more issues or feature requests, see the [GitHub issues page](https://github
 | **Autopop Wrinklers** | Pops wrinklers automatically, except during Halloween/Easter if you still need event drops. |
 | **Save Shiny Wrinklers** | Protects shiny wrinklers from being popped and prevents ending the Grandmapocalypse. |
 | **Autoharvest Sugar Lump** | Harvests ripe sugar lumps automatically, with optional Rigidel swap for early harvest. |
+| **Auto Garden**       | Harvests and replants garden plants. HARVEST takes ripe plants, HARVEST + REPLANT plants them again, SMART picks the plant (golden clover when Auto-GC is on, whiskerbloom otherwise, or your harvesting bank plant while the bank can pay for it). UNLOCK runs a checkerboard of parent plants to mutate locked seeds, clearing weeds and switching to wood chips soil for better odds. |
 | **Auto-Dragon's Curve** | Swaps to Dragon's Curve aura (and optionally Reality Bending) when harvesting lumps for a higher chance of unusual lumps. |
 | **Sugar Baking Guard** | Prevents automated lump spending if it would drop your lump count below 100 (to preserve Sugar Baking bonus). |
 | **Auto-Golden Switch** | Toggles Golden Switch on for click frenzies and off afterward. |
