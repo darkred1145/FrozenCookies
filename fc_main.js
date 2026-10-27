@@ -1493,8 +1493,6 @@ function chainBank() {
 // Mutation recipes from live minigameGarden.js getMuts(), ordered so every
 // step's parents come from an earlier step or a starting seed. A repeated key
 // means the recipe wants two of that plant next to the same empty tile.
-// Spreading fungus seeds (crumbspore, doughshroom) are left out: their recipes
-// cap how many neighbours may exist, which a checkerboard cannot respect.
 var gardenMutations = [
     { target: "thumbcorn", parents: ["bakerWheat", "bakerWheat"] },
     { target: "bakeberry", parents: ["bakerWheat", "bakerWheat"] },
@@ -1517,6 +1515,14 @@ var gardenMutations = [
     { target: "everdaisy", parents: ["tidygrass", "elderwort"] },
     { target: "queenbeet", parents: ["chocoroot", "bakeberry"] },
     { target: "duketater", parents: ["queenbeet", "queenbeet"] },
+    // Spore line, reachable once crumbspore is unlocked.
+    { target: "doughshroom", parents: ["crumbspore", "crumbspore"] },
+    { target: "glovemorel", parents: ["crumbspore", "thumbcorn"] },
+    { target: "cheapcap", parents: ["crumbspore", "shimmerlily"] },
+    { target: "wrinklegill", parents: ["crumbspore", "brownMold"] },
+    { target: "foolBolete", parents: ["doughshroom", "greenRot"] },
+    { target: "ichorpuff", parents: ["elderwort", "crumbspore"] },
+    { target: "shriekbulb", parents: ["wrinklegill", "elderwort"] },
 ];
 
 // Next locked seed on the chain whose parents are both unlocked.
@@ -1541,6 +1547,58 @@ function gardenNextUnlock() {
 function gardenSeedLocked(plant) {
     var def = plant && G.plants[plant.key];
     return !!def && !def.unlocked;
+}
+
+// Spore seeds only come from uprooting meddleweed, so they stay locked until
+// the hunt below is done.
+function gardenSporeSeedsLocked() {
+    var keys = ["brownMold", "whiteMildew", "crumbspore"];
+    for (var i = 0; i < keys.length; i++) {
+        var plant = G.plants[keys[i]];
+        if (plant && !plant.unlocked) return true;
+    }
+    return false;
+}
+
+// Uprooting a meddleweed that grew past age 70 has a 0.2 * age / 100 chance to
+// leave brown mold or crumbspore on its tile. Plants meddleweed on the parent
+// squares, keeps the beds empty, and harvests any locked seed that shows up.
+function gardenSporeHunt() {
+    var meddleweed = G.plants["meddleweed"];
+    var canPlantWeed =
+        meddleweed && meddleweed.unlocked && meddleweed.plantable !== false;
+    var tended = 0;
+    for (var y = 0; y < 6; y++) {
+        for (var x = 0; x < 6; x++) {
+            if (G.isTileUnlocked && !G.isTileUnlocked(x, y)) continue;
+            var tile = G.plot[y] && G.plot[y][x];
+            if (!tile) continue;
+            if (tile[0] < 1) {
+                if (!canPlantWeed || (x + y) % 2 !== 0) continue;
+                if (!G.canPlant(meddleweed)) continue;
+                G.seedSelected = meddleweed.id;
+                G.clickTile(x, y);
+                if (G.plot[y][x][0] !== meddleweed.id + 1) continue;
+                tended += 1;
+                continue;
+            }
+            var growing = G.plantsById[tile[0] - 1];
+            if (!growing) continue;
+            if (growing.key === "meddleweed") {
+                // Plants die at age 100 and only an uproot drops spores, so
+                // harvest as soon as the odds are decent.
+                if (tile[1] < 70) continue;
+                G.harvest(x, y);
+                tended += 1;
+                continue;
+            }
+            if (!gardenSeedLocked(growing) || tile[1] < growing.mature) continue;
+            G.harvest(x, y);
+            tended += 1;
+            logEvent("AutoGarden", "Unlocked " + growing.name);
+        }
+    }
+    return tended;
 }
 
 // Change the field soil when the cooldown and the farm count allow it.
@@ -1580,6 +1638,7 @@ function gardenUnlockAction() {
     if (G.soils && G.soils.woodchips && gardenUseSoil(G.soils.woodchips)) {
         logEvent("AutoGarden", "Switched soil to wood chips for mutations");
     }
+    if (gardenSporeSeedsLocked()) return gardenSporeHunt();
     var step = gardenNextUnlock();
     if (!step) {
         gardenRestoreSoil();
