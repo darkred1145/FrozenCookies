@@ -1627,6 +1627,7 @@ function gardenRestoreSoil() {
 // current parents stay put, everything else is cleared to free the beds.
 function gardenUnlockAction() {
     if (!G || G.freeze) return 0;
+    gardenSavePlot();
     if (
         G.soils &&
         G.soils.woodchips &&
@@ -1678,6 +1679,50 @@ function gardenUnlockAction() {
     return tended;
 }
 
+// Snapshot the plot once, the first time UNLOCK is about to change it.
+function gardenSavePlot() {
+    if (gardenUnlockAction.savedPlot || !G) return;
+    var copy = [];
+    for (var y = 0; y < 6; y++) {
+        copy[y] = [];
+        for (var x = 0; x < 6; x++) {
+            var tile = G.plot[y] && G.plot[y][x];
+            copy[y][x] = tile ? [tile[0], tile[1]] : [0, 0];
+        }
+    }
+    gardenUnlockAction.savedPlot = copy;
+}
+
+// Put the saved plot back and turn the bot off so it sticks.
+function gardenRestorePlot() {
+    var saved = gardenUnlockAction.savedPlot;
+    if (!saved || !G) return false;
+    for (var y = 0; y < 6; y++) {
+        for (var x = 0; x < 6; x++) {
+            if (!G.plot[y] || !G.plot[y][x]) continue;
+            G.plot[y][x] = [saved[y][x][0], saved[y][x][1]];
+        }
+    }
+    gardenUnlockAction.savedPlot = null;
+    gardenRestoreSoil();
+    gardenSetMode(0);
+    if (typeof G.toRebuild !== "undefined") G.toRebuild = true;
+    logEvent("AutoGarden", "Plot restored, Auto Garden off");
+    return true;
+}
+FrozenCookies.restoreGardenPlot = gardenRestorePlot;
+
+// Change the Auto Garden setting from code, including the preferences button.
+function gardenSetMode(mode) {
+    if (typeof setPreferenceDirect === "function") {
+        setPreferenceDirect("autoGarden", mode);
+    } else {
+        FrozenCookies.autoGarden = mode;
+    }
+    var pref = FrozenCookies.preferenceValues && FrozenCookies.preferenceValues.autoGarden;
+    var button = typeof $ === "function" ? $("#autoGardenButton") : null;
+    if (pref && button && button.length) button[0].innerText = pref.display[mode];
+}
 // Garden plant keys matching harvestBank's setHarvestBankPlant order.
 var gardenPlantKeys = [
     null,
@@ -1731,8 +1776,12 @@ function autoGardenAction() {
                 autoGardenAction.unlockDone = 1;
                 logEvent(
                     "AutoGarden",
-                    "Unlock chain complete. Switch to SMART for income."
+                    "Unlock chain complete, switching to SMART" +
+                        (gardenUnlockAction.savedPlot
+                            ? ". FrozenCookies.restoreGardenPlot() undoes it."
+                            : ".")
                 );
+                gardenSetMode(3);
             }
         } else {
             autoGardenAction.unlockDone = 0;
@@ -4147,10 +4196,7 @@ function FCStart() {
         );
     }
 
-    if (
-        FrozenCookies.autoGarden &&
-        (FrozenCookies.setHarvestBankPlant || FrozenCookies.autoGarden == 4)
-    ) {
+    if (FrozenCookies.autoGarden) {
         autoGardenAction.unlockDone = 0;
         FrozenCookies.autoGardenBot = setInterval(
             autoGardenAction,
