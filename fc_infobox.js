@@ -230,9 +230,16 @@ function buffDuration(buffName) {
 }
 
 function updateTimers() {
-    var now = Date.now();
-    if (FrozenCookies.lastTimerDraw && (now - FrozenCookies.lastTimerDraw) < 250) return;
-    FrozenCookies.lastTimerDraw = now;
+    // Cheap flicker guard: compute a signature first, only redraw when it changes.
+    // Full circle geometry runs on every draw tick (jcanvas layers cleared each call),
+    // so throttling by time alone made the infobox blink.
+    var sigCookies = Math.floor(Game.cookies);
+    var sigTs = Game.shimmerTypes.golden.time | 0;
+    var sigBuffs = 0;
+    for (var b in Game.buffs) sigBuffs += (Game.buffs[b].time | 0);
+    var sigKey = sigCookies + "|" + sigTs + "|" + sigBuffs + "|" + (nextPurchase().cost | 0) + "|" + (delayAmount() | 0);
+    if (FrozenCookies.lastTimerSig === sigKey) return;
+    FrozenCookies.lastTimerSig = sigKey;
     // update infobox calculations and assemble output -- called every draw tick
     var chainPurchase,
         bankPercent,
