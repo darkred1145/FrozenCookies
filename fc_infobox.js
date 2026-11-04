@@ -230,9 +230,7 @@ function buffDuration(buffName) {
 }
 
 function updateTimers() {
-    // Cheap flicker guard: compute a signature first, only redraw when it changes.
-    // Full circle geometry runs on every draw tick (jcanvas layers cleared each call),
-    // so throttling by time alone made the infobox blink.
+    // Skip redraw unless state changed (prevents canvas flicker).
     var sigCookies = Math.floor(Game.cookies);
     var sigTs = Game.shimmerTypes.golden.time | 0;
     var sigBuffs = 0;
