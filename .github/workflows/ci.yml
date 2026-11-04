@@ -1,0 +1,13 @@
+name: CI
+on:
+  push:
+  pull_request:
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: node --check frozen_cookies.js && node --check fc_main.js && node --check fc_spells.js && node --check fc_gods.js && node --check fc_bank.js && node --check fc_infobox.js && node --check fc_button.js && node --check fc_preferences.js && node --check cc_upgrade_prerequisites.js

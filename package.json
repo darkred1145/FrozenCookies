@@ -1,0 +1,1 @@
+{"name":"frozen-cookies","private":true,"version":"2.52.8","scripts":{"check":"node --check frozen_cookies.js && node --check fc_main.js && node --check fc_spells.js && node --check fc_gods.js && node --check fc_bank.js && node --check fc_infobox.js && node --check fc_button.js && node --check fc_preferences.js && node --check cc_upgrade_prerequisites.js"}}

@@ -338,7 +338,7 @@ function autoCycliusAction() {
                 swapIfNeeded(FrozenCookies.autoWorship1, 2, "JADE");
             } else if (
                 // 7:30 UTC to 12:00 UTC, no Cyclius
-                currentTime >= times.SI730 &&
+                currentTime >= times.SIRuby &&
                 currentTime < times.Diamond2
             ) {
                 swapIfNeeded(FrozenCookies.autoWorship0, 0, "DIAMOND (SI)");

@@ -12,6 +12,7 @@
 })(this);
 
 function registerMod(mod_id = "frozen_cookies") {
+    if (window.FrozenCookies && window.FrozenCookies.loadedData) { console.warn("FrozenCookies already loaded"); return; }
     // register with the modding API
     Game.registerMod(mod_id, {
         init: function () {
@@ -184,7 +185,11 @@ function setOverrides(gameSaveData) {
     // In that case, set the "loadedData" var to an empty object. When the loadFCData() function runs and finds no data from the game save,
     // it pulls data from local storage or sets default values
     if (gameSaveData) {
-        FrozenCookies.loadedData = JSON.parse(gameSaveData);
+        try {
+            FrozenCookies.loadedData = JSON.parse(gameSaveData);
+        } catch (e) {
+            FrozenCookies.loadedData = {};
+        }
     } else {
         FrozenCookies.loadedData = {};
     }
@@ -213,10 +218,7 @@ function setOverrides(gameSaveData) {
         cost: 0,
         efficiency: 0,
     };
-    FrozenCookies.targetBank = {
-        cost: 0,
-        efficiency: 0,
-    };
+    FrozenCookies.targetBank = { cost: 0, efficiency: 0 };
     FrozenCookies.disabledPopups = true;
     FrozenCookies.trackedStats = [];
     FrozenCookies.lastGraphDraw = 0;
@@ -357,11 +359,15 @@ function setOverrides(gameSaveData) {
         }
 
         // Get historical data
-        FrozenCookies.frenzyTimes =
-            JSON.parse(
-                FrozenCookies.loadedData["frenzyTimes"] ||
-                    localStorage.getItem("frenzyTimes")
-            ) || {};
+        try {
+            FrozenCookies.frenzyTimes =
+                JSON.parse(
+                    FrozenCookies.loadedData["frenzyTimes"] ||
+                        localStorage.getItem("frenzyTimes")
+                ) || {};
+        } catch (e) {
+            FrozenCookies.frenzyTimes = {};
+        }
         //  FrozenCookies.non_gc_time = Number(FrozenCookies.loadedData['nonFrenzyTime']) || Number(localStorage.getItem('nonFrenzyTime')) || 0;
         //  FrozenCookies.gc_time = Number(FrozenCookies.loadedData['frenzyTime']) || Number(localStorage.getItem('frenzyTime')) || 0;;
         FrozenCookies.lastHCAmount = preferenceParse("lastHCAmount", 0);
@@ -376,14 +382,22 @@ function setOverrides(gameSaveData) {
         }
     }
 
+    function safeLocalGet(setting) {
+        try {
+            return localStorage.getItem(setting);
+        } catch (e) {
+            return null;
+        }
+    }
+
     function preferenceParse(setting, defaultVal) {
         var value = defaultVal;
         if (setting in FrozenCookies.loadedData) {
             // first look in the data from the game save
             value = FrozenCookies.loadedData[setting];
-        } else if (localStorage.getItem(setting)) {
+        } else if (safeLocalGet(setting)) {
             // if the setting isn't there, check localStorage
-            value = localStorage.getItem(setting);
+            value = safeLocalGet(setting);
         }
         return Number(value); // if not overridden by game save or localStorage, defaultVal is returned
     }
@@ -404,6 +418,7 @@ function emptyCaches() {
     FrozenCookies.caches.recommendationList = [];
     FrozenCookies.caches.buildings = [];
     FrozenCookies.caches.upgrades = [];
+    FrozenCookies.caches.nextChainedPurchase = defaultPurchase();
 }
 
 function fcDraw(from, text, origin) {
@@ -1359,8 +1374,8 @@ function reindeerCps(wrathValue) {
 }
 
 function calculateChainValue(bankAmount, cps, digit) {
-    x = Math.min(bankAmount, cps * 60 * 60 * 6 * 4);
-    n = Math.floor(Math.log((9 * x) / (4 * digit)) / Math.LN10);
+    var x = Math.min(bankAmount, cps * 60 * 60 * 6 * 4);
+    var n = Math.floor(Math.log((9 * x) / (4 * digit)) / Math.LN10);
     return 125 * Math.pow(9, n - 3) * digit;
 }
 

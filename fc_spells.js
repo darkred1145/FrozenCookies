@@ -36,12 +36,12 @@
     }
 })();
 
-nextSpell = function (i) {
+var nextSpell = function (i) {
     if (Game.ObjectsById[7].minigameLoaded) {
-        season = Game.season;
+        var season = Game.season;
         var obj = obj || {};
-        M = Game.ObjectsById[7].minigame;
-        spell = M.spellsById[1];
+        var M = Game.ObjectsById[7].minigame;
+        var spell = M.spellsById[1];
         var failChance = M.getFailChance(spell);
         if (typeof obj.failChanceSet !== "undefined")
             failChance = obj.failChanceSet;
@@ -95,14 +95,14 @@ nextSpell = function (i) {
                 choices.push('<b style="color:#5FFFFC">Sugar Lump');
             if (Math.random() < 0.1) choices = ["Blab"];
         }
-        ret = choose(choices);
+        var ret = choose(choices);
         Math.seedrandom();
         return "<small>" + ret + "</b></small>";
     }
 };
 
 // This converts the nextSpell(i) to a string to be used for checking conditions for auto casting Force The Hand of Fate in fc_main.
-nextSpellName = function (i) {
+var nextSpellName = function (i) {
     if (Game.ObjectsById[7].minigameLoaded) {
         for (var v = i; v <= i; v++) {
             if (
@@ -746,8 +746,8 @@ function autoFTHOFComboAction() {    if (!M) return;
             ((FrozenCookies.towerLimit && M.magic >= M.magicM) ||
                 (!FrozenCookies.towerLimit && M.magic >= M.magicM - 1)) &&
             !Game.hasBuff("Click frenzy") &&
-            !nextSpellName(0) == "Click Frenzy" &&
-            !nextSpellName(1) == "Click Frenzy")
+            nextSpellName(0) != "Click Frenzy" &&
+            nextSpellName(1) != "Click Frenzy")
     ) {
         if (autoFTHOFComboAction.autobuyyes == 1) {
             FrozenCookies.autoBuy = 1;
@@ -759,14 +759,14 @@ function autoFTHOFComboAction() {    if (!M) return;
 
     if (
         !autoFTHOFComboAction.state &&
-        ((nextSpellName(0) == "Click Frenzy" &&
-            nextSpellName(1) == "Building Special") ||
-            (nextSpellName(1) == "Click Frenzy" &&
-                nextSpellName(0) == "Building Special") ||
-            (nextSpellName(0) == "Click Frenzy" &&
-                nextSpellName(1) == "Elder Frenzy") ||
-            (nextSpellName(1) == "Click Frenzy" &&
-                nextSpellName(0) == "Elder Frenzy"))
+        (nextSpellName(0) == "Click Frenzy" &&
+            nextSpellName(1) == "Building Special" ||
+            nextSpellName(1) == "Click Frenzy" &&
+                nextSpellName(0) == "Building Special" ||
+            nextSpellName(0) == "Click Frenzy" &&
+                nextSpellName(1) == "Elder Frenzy" ||
+            nextSpellName(1) == "Click Frenzy" &&
+                nextSpellName(0) == "Elder Frenzy")
     ) {
         autoFTHOFComboAction.state = 1;
     }
@@ -806,8 +806,8 @@ function autoFTHOFComboAction() {    if (!M) return;
             return;
         case 1:
             if (
-                !nextSpellName(0) == "Click Frenzy" &&
-                !nextSpellName(1) == "Click Frenzy"
+            nextSpellName(0) != "Click Frenzy" &&
+                nextSpellName(1) != "Click Frenzy"
             ) {
                 autoFTHOFComboAction.state = 0;
                 return;
@@ -963,8 +963,8 @@ function autoFTHOFComboAction() {    if (!M) return;
             return;
         case 2:
             if (
-                !nextSpellName(0) == "Building Special" &&
-                !nextSpellName(1) == "Building Special"
+                nextSpellName(0) != "Building Special" &&
+                nextSpellName(1) != "Building Special"
             ) {
                 autoFTHOFComboAction.state = 0;
                 return;
@@ -1210,6 +1210,7 @@ function auto100ConsistencyComboAction() {
         auto100ConsistencyComboAction.countAlchemy = 0;
     if (typeof auto100ConsistencyComboAction.countTimeMach == "undefined")
         auto100ConsistencyComboAction.countTimeMach = 0;
+    if (typeof auto100ConsistencyComboAction.countAntimatter == "undefined") auto100ConsistencyComboAction.countAntimatter = 0;
 
     if (
         auto100ConsistencyComboAction.state > 20 ||
@@ -1414,7 +1415,7 @@ function auto100ConsistencyComboAction() {
         case 4: // Change dragon auras to radiant appetite and dragon's fortune
             if (
                 Game.dragonAura == 16 && // DF
-                !Game.dragonAura2 == 15 // RA
+                Game.dragonAura2 !== 15 // RA
             ) {
                 Game.specialTab = "dragon";
                 Game.SetDragonAura(15, 1);
@@ -1427,7 +1428,7 @@ function auto100ConsistencyComboAction() {
 
             if (
                 Game.dragonAura2 == 15 && // RA
-                !Game.dragonAura == 16 // DF
+                Game.dragonAura !== 16 // DF
             ) {
                 Game.specialTab = "dragon";
                 Game.SetDragonAura(16, 0);
@@ -1874,11 +1875,11 @@ function auto100ConsistencyComboAction() {
             }
             if (
                 Game.Objects["Antimatter condenser"].amount <
-                auto100ConsistencyComboAction.countAntiMatter
+                auto100ConsistencyComboAction.countAntimatter
             ) {
                 safeBuy(
                     Game.Objects["Antimatter condenser"],
-                    auto100ConsistencyComboAction.countAntiMatter -
+                    auto100ConsistencyComboAction.countAntimatter -
                         Game.Objects["Antimatter condenser"].amount
                 );
             }

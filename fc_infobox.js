@@ -230,6 +230,9 @@ function buffDuration(buffName) {
 }
 
 function updateTimers() {
+    var now = Date.now();
+    if (FrozenCookies.lastTimerDraw && (now - FrozenCookies.lastTimerDraw) < 250) return;
+    FrozenCookies.lastTimerDraw = now;
     // update infobox calculations and assemble output -- called every draw tick
     var chainPurchase,
         bankPercent,
@@ -271,7 +274,7 @@ function updateTimers() {
         chainTotal = 0,
         chainFinished,
         chainCompletion = 0;
-    c = $("#backgroundLeftCanvas");
+    var c = $("#backgroundLeftCanvas");
     if (nextChainedPurchase().cost > nextPurchase().cost) {
         chainPurchase = nextChainedPurchase().purchase;
         chainTotal =

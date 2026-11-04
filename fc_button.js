@@ -206,7 +206,7 @@ function rebuildStore(recalculate) {
                             "background-image:url(img/" + me.icon + ".png);"
                         )
                 );
-        content = $("<div>").addClass("content");
+        var content = $("<div>").addClass("content");
 
         content.append($("<div>").addClass("title").html(me.displayName));
         content.append($("<div>").addClass("price").text(Beautify(me.price)));
