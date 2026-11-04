@@ -231,8 +231,7 @@ function buffDuration(buffName) {
 
 function updateTimers() {
     // update infobox calculations and assemble output -- called every draw tick
-    // ponytail: 250ms throttle caused canvas flicker (jcanvas layers cleared each draw), removed
-    // Draw every tick.
+    // Do not throttle: drawCircles clears jcanvas layers each draw, throttling makes it flicker.
     var chainPurchase,
         bankPercent,
         purchasePercent,
