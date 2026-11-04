@@ -230,8 +230,11 @@ function buffDuration(buffName) {
 }
 
 function updateTimers() {
+    var now = Date.now();
+    if (FrozenCookies.lastTimerDraw && (now - FrozenCookies.lastTimerDraw) < 250) return;
+    FrozenCookies.lastTimerDraw = now;
     // update infobox calculations and assemble output -- called every draw tick
-    // Do not throttle: drawCircles clears jcanvas layers each draw, throttling makes it flicker.
+    // update infobox calculations and assemble output -- called every draw tick
     var chainPurchase,
         bankPercent,
         purchasePercent,
