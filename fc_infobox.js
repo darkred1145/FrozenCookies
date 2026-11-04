@@ -230,10 +230,9 @@ function buffDuration(buffName) {
 }
 
 function updateTimers() {
-    var now = Date.now();
-    if (FrozenCookies.lastTimerDraw && (now - FrozenCookies.lastTimerDraw) < 250) return;
-    FrozenCookies.lastTimerDraw = now;
     // update infobox calculations and assemble output -- called every draw tick
+    // ponytail: 250ms throttle caused canvas flicker (jcanvas layers cleared each draw), removed
+    // Draw every tick.
     var chainPurchase,
         bankPercent,
         purchasePercent,
