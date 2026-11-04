@@ -71,10 +71,8 @@ jobs:
               -f body="Automated merge of upstream/main (erbkaiser/FrozenCookies) into this fork." >/dev/null
           fi
           pr=$(gh pr list --head sync/upstream --state open --json number --jq '.[0].number')
-          if gh pr merge "$pr" --auto --merge 2>/dev/null; then
-            echo "auto-merge queued for PR #$pr"
-          elif gh pr merge "$pr" --merge 2>/dev/null; then
-            echo "merged PR #$pr directly"
+          if gh api --method PUT "repos/${{ github.repository }}/pulls/$pr/merge" -f merge_method=merge >/dev/null 2>&1; then
+            echo "merged PR #$pr"
           else
             echo "could not merge PR #$pr; left open for manual merge"
           fi
