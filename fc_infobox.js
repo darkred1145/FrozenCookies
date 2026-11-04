@@ -234,7 +234,6 @@ function updateTimers() {
     if (FrozenCookies.lastTimerDraw && (now - FrozenCookies.lastTimerDraw) < 250) return;
     FrozenCookies.lastTimerDraw = now;
     // update infobox calculations and assemble output -- called every draw tick
-    // update infobox calculations and assemble output -- called every draw tick
     var chainPurchase,
         bankPercent,
         purchasePercent,
