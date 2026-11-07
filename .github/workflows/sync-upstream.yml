@@ -13,7 +13,6 @@ on:
 permissions:
   contents: write
   pull-requests: write
-  issues: write
 
 concurrency:
   group: sync-upstream
@@ -79,10 +78,12 @@ jobs:
 
       - name: Report conflict
         if: steps.merge.outputs.status == 'conflict'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          set -euo pipefail
-          gh issue create --repo "${{ github.repository }}" \
-            --title "Upstream sync conflict" \
-            --body "Merging upstream/main into this fork conflicted. Resolve in the GitHub UI: https://github.com/${{ github.repository }}/compare/main...erbkaiser:main" >/dev/null
+          {
+            echo "## Upstream sync conflict"
+            echo
+            echo "Merging upstream/main into this fork conflicted in \\`fc_main.js\\`."
+            echo
+            echo "Resolve it in the GitHub compare view: [main...erbkaiser:main](https://github.com/${{ github.repository }}/compare/main...erbkaiser:main)"
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "Upstream sync conflict detected; see the job summary for resolution details."
