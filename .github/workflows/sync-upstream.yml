@@ -46,44 +46,69 @@ jobs:
 
           git checkout -B sync/upstream
           if ! git merge --no-edit upstream/main; then
+            conflicts=$(git diff --name-only --diff-filter=U | paste -sd ' ' -)
             git merge --abort || true
             echo "status=conflict" >> "$GITHUB_OUTPUT"
+            echo "conflicts=${conflicts:-unknown}" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
           git push --force origin sync/upstream
           echo "status=merged" >> "$GITHUB_OUTPUT"
 
-      - name: Open or update PR
+      - name: Open and merge PR
         if: steps.merge.outputs.status == 'merged'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          gh api --method PUT "repos/${{ github.repository }}" -F allow_auto_merge=true >/dev/null 2>&1 \
-            || echo "could not enable auto-merge via API"
-          if ! gh pr list --repo "${{ github.repository }}" --head sync/upstream --state open --json number --jq '.[0].number' | grep -q .; then
-            gh api --method POST "repos/${{ github.repository }}/pulls" \
+          repo="${{ github.repository }}"
+          if ! gh pr list --repo "$repo" --head sync/upstream --state open --json number --jq '.[0].number' | grep -q .; then
+            gh api --method POST "repos/$repo/pulls" \
               -f title="Sync upstream" \
               -f head=sync/upstream \
               -f base=main \
               -f body="Automated merge of upstream/main (erbkaiser/FrozenCookies) into this fork." >/dev/null
           fi
-          pr=$(gh pr list --repo "${{ github.repository }}" --head sync/upstream --state open --json number --jq '.[0].number')
-          if gh api --method PUT "repos/${{ github.repository }}/pulls/$pr/merge" -f merge_method=merge >/dev/null 2>&1; then
+          pr=$(gh pr list --repo "$repo" --head sync/upstream --state open --json number --jq '.[0].number')
+          if gh api --method PUT "repos/$repo/pulls/$pr/merge" -f merge_method=merge >/dev/null; then
             echo "merged PR #$pr"
           else
-            echo "could not merge PR #$pr; left open for manual merge"
+            {
+              echo "## Upstream sync PR is not mergeable"
+              echo
+              echo "PR #$pr was updated with upstream/main but cannot be merged automatically, usually a conflict:"
+              echo "https://github.com/$repo/pull/$pr"
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "::error title=Upstream sync PR needs a human::PR #$pr has conflicts. Resolve at https://github.com/$repo/pull/$pr"
+            exit 1
           fi
 
-      - name: Report conflict
+      - name: Report conflict and fail once
         if: steps.merge.outputs.status == 'conflict'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          set -euo pipefail
+          repo="${{ github.repository }}"
+          files="${{ steps.merge.outputs.conflicts }}"
+          sha=$(git rev-parse --short upstream/main)
+          marker="sync-conflict-${sha}"
+
           {
             echo "## Upstream sync conflict"
             echo
-            echo "Merging upstream/main into this fork conflicted in \\`fc_main.js\\`."
+            echo "Merging upstream/main into this fork conflicts in: \`${files}\`"
             echo
-            echo "Resolve it in the GitHub compare view: [main...erbkaiser:main](https://github.com/${{ github.repository }}/compare/main...erbkaiser:main)"
+            echo "Resolve it in the compare view: [$repo compare](https://github.com/$repo/compare/main...erbkaiser:main)"
           } >> "$GITHUB_STEP_SUMMARY"
-          echo "Upstream sync conflict detected; see the job summary for resolution details."
+
+          if git ls-remote --exit-code --tags origin "refs/tags/${marker}" >/dev/null 2>&1; then
+            echo "::warning title=Upstream sync still conflicted::${files} (already notified for upstream ${sha})"
+            exit 0
+          fi
+
+          git tag "$marker" upstream/main
+          git push origin "refs/tags/${marker}" >/dev/null
+          echo "::error title=Upstream sync conflict::upstream/main conflicts with this fork in: ${files}"
+          exit 1
