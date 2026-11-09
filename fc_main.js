@@ -3658,7 +3658,7 @@ function autoCookie() {
                 shouldDropBulkForLimits(recommendation.purchase)
             ) {
                 document.getElementById("storeBulk10").click();
-                safeBuy(recommendation.purchase, 1);
+                safeBuy(recommendation.purchase, Game.buyBulk > 0 ? Game.buyBulk : 1);
                 document.getElementById("storeBulk100").click();
             } else if (
                 recommendation.type == "building" &&
