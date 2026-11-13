@@ -39,7 +39,7 @@ An automated Cookie Clicker tool.
 ## Compatibility
 
 **Current version:** fork-2.052.9  
-Supports: Cookie Clicker web version 2.052 and Steam version 2.053
+Supports: Cookie Clicker web version 2.058 and Steam version 2.053
 
 FrozenCookies works with most other mods, including [CCSE](https://github.com/klattmose/klattmose.github.io/tree/master/CookieClicker).  
 It is likely **not compatible** with other automation mods or auto-clickers.
