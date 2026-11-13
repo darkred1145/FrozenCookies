@@ -38,8 +38,8 @@ if (scriptElement !== null && scriptElement.getAttribute("src")) {
 }
 var FrozenCookies = {
     baseUrl: baseUrl,
-    branch: "erb-",
-    version: "2.052.8", // This should match the version in README.md and Steam info.txt
+    branch: "fork-",
+    version: "2.052.9", // This should match the version in README.md and Steam info.txt
 };
 
 // Load external libraries and FC scripts in order

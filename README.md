@@ -1,6 +1,6 @@
 ![A single round cookie with a soft, slightly crumbly texture, topped with blue candy pieces and silver sprinkles. The cookie rests on a bed of shredded coconut, creating a wintry, festive atmosphere. No text is present. The overall tone alludes to winter, a frozen atmosphere.](https://user-images.githubusercontent.com/6014923/165900996-4726d38f-3c7c-4932-8d2e-f98bed93a836.png)
 
-![Version](https://img.shields.io/badge/version-2.052.8-blue)
+![Version](https://img.shields.io/badge/version-2.052.9-blue)
 ![License](https://img.shields.io/github/license/darkred1145/FrozenCookies)
 [![GitHub issues](https://img.shields.io/github/issues/darkred1145/FrozenCookies?label=issues)](https://github.com/darkred1145/FrozenCookies/issues)
 [![Last commit](https://img.shields.io/github/last-commit/darkred1145/FrozenCookies?label=last%20commit)](https://github.com/darkred1145/FrozenCookies/commits/main)
@@ -38,7 +38,7 @@ An automated Cookie Clicker tool.
 
 ## Compatibility
 
-**Current version:** erb-2.052.8  
+**Current version:** fork-2.052.9  
 Supports: Cookie Clicker web version 2.052 and Steam version 2.053
 
 FrozenCookies works with most other mods, including [CCSE](https://github.com/klattmose/klattmose.github.io/tree/master/CookieClicker).  
